@@ -16,6 +16,7 @@ import urllib.parse
 import re
 import requests
 from cloudlines.constants import ServiceNames, PedigreeSex, PedigreeStatus
+from .tasks import run_export_all
 
 
 @login_required(login_url="/account/login")
@@ -33,13 +34,6 @@ def export(request):
 
     attached_service = get_main_account(request.user)
     if request.method == 'POST':
-        token_res = requests.post(url=urllib.parse.urljoin(settings.ORCH_URL, '/api-token-auth/'),
-                                  data={'username': settings.ORCH_USER, 'password': settings.ORCH_PASS})
-
-        ## create header
-        headers = {'Content-Type': 'application/json', 'Authorization': f"token {token_res.json()['token']}"}
-
-        ## get pedigrees
         file_name = f"export-{attached_service.animal_type}-{time()}-acc-{attached_service.id}"
         if attached_service.service.service_name in ServiceNames.LARGE_TIERS:
             domain = attached_service.domain
@@ -48,15 +42,9 @@ def export(request):
         from rest_framework.authtoken.models import Token
         token, created = Token.objects.get_or_create(user=request.user)
 
-        data = '{"domain": "%s", "token": "%s", "account": %d, "file_name": "%s"}' % (domain, token, attached_service.id, file_name)
+        run_export_all.delay(domain, str(token), attached_service.id, file_name)
+        ExportQueue(account=attached_service, file_name=file_name, user=request.user).save()
 
-        post_res = requests.post(url=urllib.parse.urljoin(settings.ORCH_URL, '/api/tasks/export_all/'), headers=headers, data=data)
-
-        if post_res.status_code == 200:
-            ExportQueue(account=attached_service, file_name=file_name, user=request.user).save()
-        else:
-            # for error handling
-            pass
     return render(request, 'export.html', {'queue_items': ExportQueue.objects.filter(account=attached_service)})
 
 

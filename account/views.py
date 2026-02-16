@@ -26,8 +26,8 @@ from approvals.models import Approval
 from money import Money
 from re import match
 from urllib.parse import urljoin
-from threading import Thread
 from cloudlines.constants import ServiceNames, BoltonTypes, SiteModes, DEFAULT_ANIMAL_TYPE
+from .tasks import sync_custom_fields
 import random
 import string
 import stripe
@@ -708,7 +708,8 @@ def custom_field_edit(request):
         attached_service.custom_fields = json.dumps(custom_fields)
         attached_service.save()
 
-        Thread(target=update_custom_fields, args=(request, attached_service)).start()
+        token, created = Token.objects.get_or_create(user=request.user)
+        sync_custom_fields.delay(attached_service.domain, attached_service.id, str(token))
         return HttpResponse(json.dumps({'success': True}))
 
     elif request.POST.get('formType') == 'edit':
@@ -720,7 +721,8 @@ def custom_field_edit(request):
         attached_service.custom_fields = json.dumps(custom_fields)
         attached_service.save()
 
-        Thread(target=update_custom_fields, args=(request, attached_service)).start()
+        token, created = Token.objects.get_or_create(user=request.user)
+        sync_custom_fields.delay(attached_service.domain, attached_service.id, str(token))
         return HttpResponse(json.dumps({'success': True}))
 
     elif request.POST.get('formType') == 'delete':
@@ -728,21 +730,9 @@ def custom_field_edit(request):
         attached_service.custom_fields = json.dumps(custom_fields)
         attached_service.save()
 
-        Thread(target=update_custom_fields, args=(request, attached_service)).start()
+        token, created = Token.objects.get_or_create(user=request.user)
+        sync_custom_fields.delay(attached_service.domain, attached_service.id, str(token))
         return HttpResponse(json.dumps({'success': True}))
-
-
-def update_custom_fields(request, attached_service):
-    token, created = Token.objects.get_or_create(user=request.user)
-    data = '{"domain": "%s", "account": %s, "token": "%s"}' % (attached_service.domain, attached_service.id, token)
-
-    # get auth token
-    token_res = requests.post(url=urljoin(django_settings.ORCH_URL, '/api-token-auth/'),
-                              data={'username': django_settings.ORCH_USER, 'password': django_settings.ORCH_PASS})
-    ## create header
-    headers = {'Content-Type': 'application/json', 'Authorization': f"token {token_res.json()['token']}"}
-    post_res = requests.post(url=urljoin(django_settings.ORCH_URL, '/api/custom_fields/update_fields/'), headers=headers,
-                             data=data)
 
 
 @login_required(login_url="/account/login")

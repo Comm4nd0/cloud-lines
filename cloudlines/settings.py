@@ -34,7 +34,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'rest_framework',
     'django_filters',
-    'zappa_django_utils',
+    'django_celery_beat',
     'rest_framework.authtoken',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -137,3 +137,37 @@ BOLTON_API_URL = "https://cloud-lines.com/api/bolton/"
 TEST_STRIPE_DOMAINS = ['localhost:8000', '127.0.0.1:8000', 'development.cloud-lines.com', 'test.cloud-lines.com', 'demo.cloud-lines.com', 'poultrydemo.cloud-lines.com']
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ---------------------------------------------------------------------------
+# Celery Configuration
+# ---------------------------------------------------------------------------
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+# ---------------------------------------------------------------------------
+# Email Configuration (SES)
+# ---------------------------------------------------------------------------
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+# When using SES set EMAIL_BACKEND=django_ses.SESBackend
+AWS_SES_REGION_NAME = os.environ.get('AWS_SES_REGION_NAME', 'eu-west-1')
+AWS_SES_REGION_ENDPOINT = os.environ.get('AWS_SES_REGION_ENDPOINT', 'email.eu-west-1.amazonaws.com')
+
+# ---------------------------------------------------------------------------
+# Database Configuration (environment-based override)
+# ---------------------------------------------------------------------------
+if os.environ.get('DATABASE_URL') or os.environ.get('DB_NAME'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DB_NAME', 'cloudlines'),
+            'USER': os.environ.get('DB_USER', 'cloudlines'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', 'db'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
+        }
+    }

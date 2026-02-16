@@ -23,6 +23,7 @@ from itertools import chain
 from account.views import has_permission, redirect_2_login
 from django.contrib.auth.decorators import login_required
 from cloudlines.constants import ServiceNames, PedigreeStatus, PedigreeSex, States
+from .tasks import run_data_validator, run_coi as run_coi_task, run_kinship as run_kinship_task, run_mean_kinship as run_mean_kinship_task, run_stud_advisor as run_stud_advisor_task
 
 
 logger = logging.getLogger(__name__)
@@ -135,8 +136,7 @@ def data_validation(request):
             'dv_q_id': dv.id,
             'token': str(token)}
 
-    coi_raw = requests.post(urllib.parse.urljoin(settings.METRICS_URL, "/api/metrics/data_validator/"),
-                            json=dumps(data, cls=DjangoJSONEncoder))
+    run_data_validator.delay(remote_output, file_name, attached_service.domain, dv.id, str(token))
 
     response = {'status': 'success'}
     return HttpResponse(dumps(response))
@@ -202,10 +202,7 @@ def coi(request):
             'domain': attached_service.domain,
             'token': str(token)}
 
-    coi_raw = requests.post(urllib.parse.urljoin(settings.METRICS_URL, "/api/metrics/coi/"),
-                            json=dumps(data, cls=DjangoJSONEncoder))
-
-    #coi_dict = loads(coi_raw.json())
+    run_coi_task.delay(remote_output, file_name, attached_service.domain, str(token))
 
 
 def kinship(request):
@@ -315,21 +312,12 @@ def kinship(request):
             'kin_q_id': kin.id,
             'token': str(token)}
 
-    coi_raw = requests.post(urllib.parse.urljoin(settings.METRICS_URL, f'/api/metrics/{mother.id}/{father.id}/kinship/'),
-                            json=dumps(data, cls=DjangoJSONEncoder), stream=True)
+    run_kinship_task.delay(mother.id, father.id, remote_output, file_name, attached_service.domain, kin.id, str(token))
 
-    if coi_raw.status_code == 200:
-        response = {'status': 'message',
-                    'msg': "",
-                    'item_id': kin.id
-                    }
-    else:
-        kin.delete()
-        send_mail('Metrics server down', "Metrics", "Check Metrics server")
-        response = {'status': 'fail',
-                    'msg': "Failed to communicate with the server!",
-                    'item_id': ''
-                    }
+    response = {'status': 'message',
+                'msg': "",
+                'item_id': kin.id
+                }
     return HttpResponse(dumps(response))
 
 
@@ -410,12 +398,7 @@ def mean_kinship(request):
                 'domain': attached_service.domain,
                 'token': str(token)}
 
-        coi_raw = requests.post(urllib.parse.urljoin(settings.METRICS_URL, '/api/metrics/mean_kinship/'),
-                                json=dumps(data, cls=DjangoJSONEncoder), stream=True)
-
-        # coi_dict = loads(coi_raw.json())
-        # for pedigree, value in coi_dict.items():
-        #     Pedigree.objects.filter(account=attached_service, id=pedigree.strip('X')).update(mean_kinship=value['1'])
+        run_mean_kinship_task.delay(remote_output, file_name, attached_service.domain, str(token))
 
 
 def stud_advisor_pedigree_details(request, pedigree):
@@ -538,22 +521,18 @@ def stud_advisor(request):
             'token': str(token),
             'queue_id': sa.id}
 
-    coi_raw = requests.post(urllib.parse.urljoin(settings.METRICS_URL, '/api/metrics/stud_advisor/'),
-                            json=dumps(data, cls=DjangoJSONEncoder), stream=True)
-    if coi_raw.status_code == 200:
-        response = {'status': 'message',
-                    'msg': "",
-                    'item_id': sa.id
-                    }
-        return HttpResponse(dumps(response))
-    else:
-        sa.delete()
-        send_mail('Metrics server down', "Metrics", "Check Metrics server")
-        response = {'status': 'fail',
-                    'msg': "Failed to communicate with the server!",
-                    'item_id': ''
-                    }
-        return HttpResponse(dumps(response))
+    run_stud_advisor_task.delay(
+        remote_output, file_name, attached_service.domain,
+        pedigree.id, pedigree.mean_kinship,
+        pedigree_details['breed_mean_coi'],
+        pedigree.breed.mk_threshold,
+        str(token), sa.id
+    )
+    response = {'status': 'message',
+                'msg': "",
+                'item_id': sa.id
+                }
+    return HttpResponse(dumps(response))
 
 
 def stud_advisor_results(request, id):

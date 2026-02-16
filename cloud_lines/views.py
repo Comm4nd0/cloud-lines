@@ -23,6 +23,7 @@ from django.db.models import Q
 from urllib.parse import urlparse
 from re import match
 from cloudlines.constants import States, PedigreeStatus, PedigreeSex, ServiceNames
+from .tasks import provision_large_tier
 import requests
 
 
@@ -516,14 +517,7 @@ def order_success(request, attached_service_id):
             sub_domain = domain_parts[0] if len(domain_parts) > 2 else None
             queue_item = LargeTierQueue.objects.create(subdomain=sub_domain, user=attached_service.user.user, user_detail=attached_service.user, attached_service=attached_service)
 
-            token_res = requests.post(url=f'{settings.ORCH_URL}/api-token-auth/',
-                                      data={'username': settings.ORCH_USER, 'password': settings.ORCH_PASS})
-            ## create header
-            headers = {'Content-Type': 'application/json', 'Authorization': f"token {token_res.json()['token']}"}
-            ## get pedigrees
-            data = '{"queue_id": %d}' % queue_item.id
-
-            post_res = requests.post(url=f'{settings.ORCH_URL}/api/tasks/new_large_tier/', headers=headers, data=data)
+            provision_large_tier.delay(queue_item.id)
             return redirect('build', queue_item.id)
         else:
             return redirect('dashboard')
