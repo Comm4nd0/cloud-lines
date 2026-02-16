@@ -258,6 +258,128 @@
 
 
 /* ============================================================== */
+/* INFINITE FAMILY TREE                                            */
+/* ============================================================== */
+
+    .family-tree-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 10px 0;
+    }
+
+    .tree-scroll-wrapper {
+        min-width: fit-content;
+    }
+
+    .tree-root,
+    .tree-children {
+        list-style: none;
+        padding-left: 0;
+        margin: 0;
+    }
+
+    .tree-children {
+        padding-left: 24px;
+        border-left: 2px solid #dee2e6;
+        margin-left: 12px;
+        margin-top: 4px;
+    }
+
+    .tree-node {
+        position: relative;
+        padding: 4px 0;
+    }
+
+    .tree-children > .tree-node::before {
+        content: '';
+        position: absolute;
+        top: 16px;
+        left: -24px;
+        width: 22px;
+        height: 0;
+        border-top: 2px solid #dee2e6;
+    }
+
+    .tree-node-content {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: 1px solid #dee2e6;
+        background: #fff;
+        font-size: 0.9rem;
+        position: relative;
+        max-width: 280px;
+    }
+
+    .tree-node-subject {
+        background: #f0f9f9;
+        border-color: #44AAAC;
+        font-size: 1rem;
+    }
+
+    .tree-node-male {
+        border-left: 3px solid #4188c0;
+    }
+
+    .tree-node-female {
+        border-left: 3px solid #AC4476;
+    }
+
+    .tree-node-unknown {
+        border-left: 3px solid #ccc;
+        background: #fafafa;
+    }
+
+    .tree-role {
+        display: block;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        color: #999;
+        letter-spacing: 0.03em;
+        margin-bottom: 1px;
+    }
+
+    .tree-node-content a {
+        color: #455a64;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .tree-node-content a:hover {
+        color: #44AAAC;
+        text-decoration: underline;
+    }
+
+    .tree-expand {
+        margin-left: 6px;
+        padding: 1px 5px;
+        font-size: 0.75rem;
+        vertical-align: middle;
+    }
+
+    @media (max-width: 767.98px) {
+        .tree-children {
+            padding-left: 16px;
+            margin-left: 8px;
+        }
+
+        .tree-children > .tree-node::before {
+            left: -16px;
+            width: 14px;
+        }
+
+        .tree-node-content {
+            padding: 5px 8px;
+            font-size: 0.82rem;
+            max-width: 220px;
+        }
+
+        .tree-role {
+            font-size: 0.65rem;
+        }
+    }
+
+/* ============================================================== */
 /* BS4 → BS5 COMPATIBILITY                                         */
 /* ============================================================== */
 

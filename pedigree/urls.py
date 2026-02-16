@@ -14,6 +14,7 @@ urlpatterns = [
     path('<int:pedigree_id>/certificate/<str:type>', views.GenerateCert.as_view(), name='cert'),
     path('get-pedigrees', tabledata.get_pedigrees, name="get_pedigrees"),
     path('get_pedigree_details', views.get_pedigree_details, name="get_pedigree_details"),
+    path('<int:pedigree_id>/ancestors/', views.get_ancestors, name='get_ancestors'),
     path('get-ta-pedigrees/<str:sex>/<str:state>/<str:avoid>', tabledata.get_ta_pedigrees, name="get_ta_pedigrees"),
     path('pedigree_payment_settings', pedigree_charging.PedigreePaymentSettings.as_view(), name="pedigree_payment_settings"),
     path('pedigree_price_edit', pedigree_charging.pedigree_price_edit, name="pedigree_price_edit"),

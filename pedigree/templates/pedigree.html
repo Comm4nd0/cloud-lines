@@ -399,254 +399,170 @@ vertical-align: middle;
                                 });
                             </script>
                         {% endif %}
-                        <div id="certificate">
-                            <table class="table responsive">
-                                <thead>
-                                    <tr>
-                                        <th>Parents</th>
-                                        <th>Grandparents</th>
-                                        <th>Great Grandparents</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <!--## col1 ##-->
-                                        <td rowspan="4">
-                                            <!--cell text-->
-                                            {% if lvl2_1 %}{{ service.father_title }}
-                                                {% include 'relative.html' with pedigree=lvl2_1 %}
+                        <!-- Dynamic infinite family tree -->
+                        <div id="family-tree" class="family-tree-container">
+                            <div class="tree-scroll-wrapper">
+                                <ul class="tree-root">
+                                    <li class="tree-node" data-id="{{ lvl1.id }}" data-type="pedigree">
+                                        <div class="tree-node-content tree-node-subject">
+                                            <i class="fad {% if lvl1.sex == 'female' %}fa-venus{% else %}fa-mars{% endif %}"></i>
+                                            <a href="{% url 'pedigree' lvl1.id %}"><strong>{{ lvl1.name|default:lvl1.reg_no }}</strong></a>
+                                            <small class="text-muted d-block">{{ lvl1.reg_no }}</small>
+                                        </div>
+                                        <ul class="tree-children" id="tree-root-children">
+                                            <!-- Father branch -->
+                                            {% if lvl2_1 %}
+                                            <li class="tree-node" data-id="{{ lvl2_1.id }}" data-type="pedigree" data-has-parents="{{ lvl2_1.parent_father|yesno:'true,false' }}">
+                                                <div class="tree-node-content tree-node-male">
+                                                    <span class="tree-role">{{ service.father_title }}</span>
+                                                    <i class="fad fa-mars"></i>
+                                                    <a href="{% url 'pedigree' lvl2_1.id %}">{{ lvl2_1.name|default:lvl2_1.reg_no }}</a>
+                                                    <small class="text-muted d-block">{{ lvl2_1.reg_no }}</small>
+                                                    {% if lvl2_1.parent_father or lvl2_1.parent_mother or lvl2_1.breed_group %}
+                                                        <button class="btn btn-xs btn-outline-secondary tree-expand" onclick="expandNode(this)" title="Load ancestors"><i class="fad fa-plus-circle"></i></button>
+                                                    {% endif %}
+                                                </div>
+                                            </li>
                                             {% else %}
-                                                {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
-                                                    {% include 'add_new_pedigree.html' with pedigree=lvl2_1 %}
-                                                    <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#addExistingParentFather">Add existing</button>
-                                                {% else %}
-                                                    <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#login">Add existing</button>
-                                                {% endif %}
+                                            <li class="tree-node tree-node-empty">
+                                                <div class="tree-node-content tree-node-unknown">
+                                                    <span class="tree-role">{{ service.father_title }}</span>
+                                                    <span class="text-muted">Unknown</span>
+                                                </div>
+                                            </li>
                                             {% endif %}
-                                        </td>
-                                        <!--## col2 ##-->
-                                        <td rowspan="2">
-                                            {% if lvl3_1 %}{{ service.father_title }}
-                                                {% include 'relative.html' with pedigree=lvl3_1 %}
-                                            {% else %}
-                                                {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
-                                                    {% include 'add_new_pedigree.html' with pedigree=lvl3_1 %}
-                                                {% else %}
-                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#login">
-                                                        <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
-                                                    </button>
-                                                {% endif %}
-                                            {% endif %}
-                                        </td>
-                                        <!--## col3 ##-->
-                                        <td>
-                                            {% if lvl4_1 %}{{ service.father_title }}
-                                                {% include 'relative.html' with pedigree=lvl4_1 %}
-                                            {% else %}
-                                                {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
-                                                    {% include 'add_new_pedigree.html' with pedigree=lvl4_1 %}
-                                                {% else %}
-                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#login">
-                                                        <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
-                                                    </button>
-                                                {% endif %}
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <!--## col3 ##-->
-                                        <td>
-                                            {% if lvl4_2 %}{{ service.mother_title }}
-                                                {% include 'relative.html' with pedigree=lvl4_2 %}
-                                            {% elif lvl4_2_grp %}
-                                                Group
-                                                {% include 'relative-breed_group.html' with breed_group=lvl4_2_grp %}
-                                            {% else %}
-                                                {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
-                                                    {% include 'add_new_pedigree.html' with pedigree=lvl4_2 %}
-                                                {% else %}
-                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#login">
-                                                        <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
-                                                    </button>
-                                                {% endif %}
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <!--## col2 ##-->
-                                        <td rowspan="2">
-                                            {% if lvl3_2 %}{{ service.mother_title }}
-                                                {% include 'relative.html' with pedigree=lvl3_2 %}
-                                            {% elif lvl3_2_grp %}
-                                                Group
-                                                {% include 'relative-breed_group.html' with breed_group=lvl3_2_grp %}
-                                            {% else %}
-                                                {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
-                                                    {% include 'add_new_pedigree.html' with pedigree=lvl3_2 %}
-                                                {% else %}
-                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#login">
-                                                        <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
-                                                    </button>
-                                                {% endif %}
-                                            {% endif %}
-
-                                        </td>
-                                        <!--## col3 ##-->
-                                        <td>
-                                            {% if lvl4_3 %}{{ service.father_title }}
-                                                {% include 'relative.html' with pedigree=lvl4_3 %}
-                                            {% else %}
-                                                {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
-                                                    {% include 'add_new_pedigree.html' with pedigree=lvl4_3 %}
-                                                {% else %}
-                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#login">
-                                                        <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
-                                                    </button>
-                                                {% endif %}
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <!--## col3 ##-->
-                                        <td>
-                                            {% if lvl4_4 %}{{ service.mother_title }}
-                                                {% include 'relative.html' with pedigree=lvl4_4 %}
-                                            {% elif lvl4_4_grp %}
-                                                Group
-                                                {% include 'relative-breed_group.html' with breed_group=lvl4_4_grp %}
-                                            {% else %}
-                                                {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
-                                                    {% include 'add_new_pedigree.html' with pedigree=lvl4_4 %}
-                                                {% else %}
-                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#login">
-                                                        <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
-                                                    </button>
-                                                {% endif %}
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <!--## col1 ##-->
-                                        <td rowspan="4">
-                                            <!--cell text-->
-                                            {% if lvl2_2 %}{{ service.mother_title }}
-                                                {% include 'relative.html' with pedigree=lvl2_2 %}
+                                            <!-- Mother branch -->
+                                            {% if lvl2_2 %}
+                                            <li class="tree-node" data-id="{{ lvl2_2.id }}" data-type="pedigree" data-has-parents="{{ lvl2_2.parent_father|yesno:'true,false' }}">
+                                                <div class="tree-node-content tree-node-female">
+                                                    <span class="tree-role">{{ service.mother_title }}</span>
+                                                    <i class="fad fa-venus"></i>
+                                                    <a href="{% url 'pedigree' lvl2_2.id %}">{{ lvl2_2.name|default:lvl2_2.reg_no }}</a>
+                                                    <small class="text-muted d-block">{{ lvl2_2.reg_no }}</small>
+                                                    {% if lvl2_2.parent_father or lvl2_2.parent_mother or lvl2_2.breed_group %}
+                                                        <button class="btn btn-xs btn-outline-secondary tree-expand" onclick="expandNode(this)" title="Load ancestors"><i class="fad fa-plus-circle"></i></button>
+                                                    {% endif %}
+                                                </div>
+                                            </li>
                                             {% elif lvl2_2_grp %}
-                                                Group
-                                                {% include 'relative-breed_group.html' with breed_group=lvl2_2_grp %}
+                                            <li class="tree-node tree-node-group">
+                                                <div class="tree-node-content tree-node-unknown">
+                                                    <span class="tree-role">{{ service.mother_title }}</span>
+                                                    <i class="far fa-object-ungroup"></i> {{ lvl2_2_grp.group_name }}
+                                                </div>
+                                            </li>
                                             {% else %}
-                                                {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
-                                                    {% include 'add_new_pedigree.html' with pedigree=lvl2_2 %}
-                                                    <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#addExistingParentMother">Add existing</button>
-                                                {% else %}
-                                                    <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#login">Add existing</button>
-                                                {% endif %}
+                                            <li class="tree-node tree-node-empty">
+                                                <div class="tree-node-content tree-node-unknown">
+                                                    <span class="tree-role">{{ service.mother_title }}</span>
+                                                    <span class="text-muted">Unknown</span>
+                                                </div>
+                                            </li>
                                             {% endif %}
-
-                                        </td>
-                                        <!--## col2 ##-->
-                                        <td rowspan="2">
-                                            {% if lvl3_3 %}{{ service.father_title }}
-                                                {% include 'relative.html' with pedigree=lvl3_3 %}
-                                            {% else %}
-                                                {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
-                                                    {% include 'add_new_pedigree.html' with pedigree=lvl3_3 %}
-                                                {% else %}
-                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#login">
-                                                        <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
-                                                    </button>
-                                                {% endif %}
-                                            {% endif %}
-                                        </td>
-                                        <!--## col3 ##-->
-                                        <td>
-                                            {% if lvl4_5 %}{{ service.father_title }}
-                                                {% include 'relative.html' with pedigree=lvl4_5 %}
-                                            {% else %}
-                                                {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
-                                                    {% include 'add_new_pedigree.html' with pedigree=lvl4_5 %}
-                                                {% else %}
-                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#login">
-                                                        <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
-                                                    </button>
-                                                {% endif %}
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <!--## col3 ##-->
-                                        <td>
-                                            {% if lvl4_6 %}{{ service.mother_title }}
-                                                {% include 'relative.html' with pedigree=lvl4_6 %}
-                                            {% elif lvl4_6_grp %}
-                                                Group
-                                                {% include 'relative-breed_group.html' with breed_group=lvl4_6_grp %}
-                                            {% else %}
-                                                {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
-                                                    {% include 'add_new_pedigree.html' with pedigree=lvl4_6 %}
-                                                {% else %}
-                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#login">
-                                                        <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
-                                                    </button>
-                                                {% endif %}
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <!--## col2 ##-->
-                                        <td rowspan="2">
-                                            {% if lvl3_4 %}{{ service.mother_title }}
-                                                {% include 'relative.html' with pedigree=lvl3_4 %}
-                                            {% elif lvl3_4_grp %}
-                                                Group
-                                                {% include 'relative-breed_group.html' with breed_group=lvl3_4_grp %}
-                                            {% else %}
-                                                {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
-                                                    {% include 'add_new_pedigree.html' with pedigree=lvl3_4 %}
-                                                {% else %}
-                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#login">
-                                                        <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
-                                                    </button>
-                                                {% endif %}
-                                            {% endif %}
-                                        </td>
-                                        <!--## col3 ##-->
-                                        <td>
-                                            {% if lvl4_7 %}{{ service.father_title }}
-                                                {% include 'relative.html' with pedigree=lvl4_7 %}
-                                            {% else %}
-                                                {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
-                                                    {% include 'add_new_pedigree.html' with pedigree=lvl4_7 %}
-                                                {% else %}
-                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#login">
-                                                        <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
-                                                    </button>
-                                                {% endif %}
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <!--## col3 ##-->
-                                        <td>
-                                            {% if lvl4_8 %}{{ service.mother_title }}
-                                                {% include 'relative.html' with pedigree=lvl4_8 %}
-                                            {% elif lvl4_8_grp %}
-                                                Group
-                                                {% include 'relative-breed_group.html' with breed_group=lvl4_8_grp %}
-                                            {% else %}
-                                                {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
-                                                    {% include 'add_new_pedigree.html' with pedigree=lvl4_8 %}
-                                                {% else %}
-                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#login">
-                                                        <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
-                                                    </button>
-                                                {% endif %}
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
+
+                        <script>
+                        var csrfToken = '{{ csrf_token }}';
+                        var fatherTitle = '{{ service.father_title }}';
+                        var motherTitle = '{{ service.mother_title }}';
+
+                        function expandNode(btn) {
+                            var nodeEl = btn.closest('.tree-node');
+                            var pedigreeId = nodeEl.dataset.id;
+                            var nodeType = nodeEl.dataset.type;
+
+                            // If already expanded, toggle collapse
+                            var existingChildren = nodeEl.querySelector('.tree-children');
+                            if (existingChildren) {
+                                existingChildren.classList.toggle('d-none');
+                                var icon = btn.querySelector('i');
+                                if (existingChildren.classList.contains('d-none')) {
+                                    icon.className = 'fad fa-plus-circle';
+                                } else {
+                                    icon.className = 'fad fa-minus-circle';
+                                }
+                                return;
+                            }
+
+                            // Show loading
+                            btn.disabled = true;
+                            btn.innerHTML = '<i class="fad fa-spinner fa-spin"></i>';
+
+                            $.ajax({
+                                url: '/pedigree/' + pedigreeId + '/ancestors/',
+                                type: 'GET',
+                                headers: {'X-CSRFToken': csrfToken},
+                                success: function(data) {
+                                    var result = typeof data === 'string' ? JSON.parse(data) : data;
+                                    if (result.result === 'success') {
+                                        var childrenUl = document.createElement('ul');
+                                        childrenUl.className = 'tree-children';
+
+                                        // Father node
+                                        childrenUl.appendChild(createTreeNode(result.father, fatherTitle, 'male'));
+                                        // Mother node
+                                        childrenUl.appendChild(createTreeNode(result.mother, motherTitle, 'female'));
+
+                                        nodeEl.appendChild(childrenUl);
+
+                                        btn.innerHTML = '<i class="fad fa-minus-circle"></i>';
+                                        btn.disabled = false;
+                                    } else {
+                                        btn.innerHTML = '<i class="fad fa-exclamation-circle"></i>';
+                                    }
+                                },
+                                error: function() {
+                                    btn.innerHTML = '<i class="fad fa-exclamation-circle"></i>';
+                                    btn.disabled = false;
+                                }
+                            });
+                        }
+
+                        function createTreeNode(data, roleTitle, sex) {
+                            var li = document.createElement('li');
+                            li.className = 'tree-node';
+
+                            if (!data) {
+                                li.className += ' tree-node-empty';
+                                li.innerHTML = '<div class="tree-node-content tree-node-unknown">' +
+                                    '<span class="tree-role">' + roleTitle + '</span>' +
+                                    '<span class="text-muted">Unknown</span></div>';
+                                return li;
+                            }
+
+                            if (data.type === 'breed_group') {
+                                li.className += ' tree-node-group';
+                                li.innerHTML = '<div class="tree-node-content tree-node-unknown">' +
+                                    '<span class="tree-role">' + roleTitle + '</span>' +
+                                    '<i class="far fa-object-ungroup"></i> ' + data.name + '</div>';
+                                return li;
+                            }
+
+                            li.dataset.id = data.id;
+                            li.dataset.type = 'pedigree';
+
+                            var sexClass = (data.sex === 'female') ? 'tree-node-female' : 'tree-node-male';
+                            var sexIcon = (data.sex === 'female') ? 'fa-venus' : 'fa-mars';
+
+                            var html = '<div class="tree-node-content ' + sexClass + '">' +
+                                '<span class="tree-role">' + roleTitle + '</span>' +
+                                '<i class="fad ' + sexIcon + '"></i> ' +
+                                '<a href="/pedigree/' + data.id + '">' + (data.name || data.reg_no) + '</a>' +
+                                '<small class="text-muted d-block">' + data.reg_no + '</small>';
+
+                            if (data.has_parents) {
+                                html += '<button class="btn btn-xs btn-outline-secondary tree-expand" onclick="expandNode(this)" title="Load ancestors"><i class="fad fa-plus-circle"></i></button>';
+                            }
+
+                            html += '</div>';
+                            li.innerHTML = html;
+                            return li;
+                        }
+                        </script>
                         {% if editor or lvl1.breed.breed_name in breeds_editable or lvl1.current_owner.user == request.user or lvl1.breeder.user == request.user %}
                             <div class="row">
                                 <div class="col-12">

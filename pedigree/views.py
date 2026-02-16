@@ -1067,3 +1067,42 @@ def update_pedigree_cf(attached_service, pedigree):
     if changed:
         pedigree.custom_fields = json.dumps(ped_custom_fields)
         pedigree.save()
+
+
+@login_required(login_url="/account/login")
+def get_ancestors(request, pedigree_id):
+    """AJAX endpoint returning parents of a pedigree for the infinite family tree."""
+    attached_service = get_main_account(request.user)
+
+    try:
+        pedigree = Pedigree.objects.get(id=pedigree_id, account=attached_service)
+    except Pedigree.DoesNotExist:
+        return HttpResponse(json.dumps({'result': 'fail'}), content_type='application/json')
+
+    father, mother = get_parents(pedigree, attached_service)
+
+    def _serialize(obj):
+        if not obj:
+            return None
+        if type(obj) == BreedGroup:
+            return {
+                'type': 'breed_group',
+                'id': obj.id,
+                'name': obj.group_name,
+            }
+        return {
+            'type': 'pedigree',
+            'id': obj.id,
+            'reg_no': obj.reg_no,
+            'name': obj.name or '',
+            'sex': obj.sex or '',
+            'status': obj.status or '',
+            'image_url': obj.images.first().image.url if obj.images.exists() else '',
+            'has_parents': bool(obj.parent_father or obj.parent_mother or obj.breed_group),
+        }
+
+    return HttpResponse(json.dumps({
+        'result': 'success',
+        'father': _serialize(father),
+        'mother': _serialize(mother),
+    }), content_type='application/json')
