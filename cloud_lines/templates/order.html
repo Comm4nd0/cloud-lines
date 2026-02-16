@@ -4,7 +4,7 @@
 
 {% block content %}
 <!-- STRIPE-->
-
+<script src="https://js.stripe.com/v3/"></script>
 <style>
     .slider-element {
     top: -100px;
@@ -502,8 +502,48 @@
 							</form>
 							<div id='ownerErrors' class="style-msg errormsg"></div>
 							<button type="button" class="btn btn-secondary back-btn" data-bs-target="#serviceSection">Back</button>
-							<button type="button" class="btn btn-primary forward-btn" data-bs-target="#paymentSection" id="submitBtn">Submit</button>
+							<button type="button" class="btn btn-primary forward-btn" id="goToPaymentBtn" data-bs-target="#paymentSection" data-validation="validateOwnerAccordion">Payment</button>
 						
+						</div>
+					</div>
+				</div>
+				<div class="accordion-item">
+					<h2 class="accordion-header" id="paymentHeading">
+						<button class="accordion-button collapsed" type="button" data-bs-target="#paymentSection">
+							Payment
+						</button>
+					</h2>
+					<div id="paymentSection" class="accordion-collapse collapse" aria-labelledby="paymentHeading">
+						<div class="accordion-body">
+							<div class="table pt-2 mb-3">
+								<table class="table table-striped">
+									<thead>
+										<tr>
+											<th>Service</th>
+											<th>Increment</th>
+											<th>Total</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td id="service2">None selected</td>
+											<td id="increment2">None selected</td>
+											<td id="total2">£0.00</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+							<div id="paymentLoading" class="text-center py-4 d-none">
+								<div class="spinner-border text-info" role="status">
+									<span class="visually-hidden">Loading...</span>
+								</div>
+								<p class="mt-2 text-muted">Preparing secure payment form...</p>
+							</div>
+							<div id="paymentError" class="alert alert-danger d-none"></div>
+							<div id="checkout">
+								<!-- Stripe Embedded Checkout will be mounted here -->
+							</div>
+							<button type="button" class="btn btn-secondary back-btn mt-3" data-bs-target="#ownerSection">Back</button>
 						</div>
 					</div>
 				</div>
@@ -641,7 +681,7 @@
 							}
 
 							if (formIsValid) {
-							const targetId = this.getAttribute('data-target');
+							const targetId = this.getAttribute('data-bs-target');
 							toggleAccordion(targetId);
 							}
 						});
@@ -649,7 +689,7 @@
 
 					backBtns.forEach((btn) => {
 						btn.addEventListener('click', function() {
-							const targetId = this.getAttribute('data-target');
+							const targetId = this.getAttribute('data-bs-target');
 							toggleAccordion(targetId);
 						});
 					});
@@ -670,58 +710,68 @@
 					}
 
 
-					// submit form
-					const submitBtn = document.getElementById('submitBtn');
+					// Stripe Embedded Checkout: load payment form into accordion step 3
+					const stripe = Stripe('{{ stripe_pk }}');
+					let stripeCheckoutMounted = false;
 
-					submitBtn.addEventListener('click', function() {
+					const goToPaymentBtn = document.getElementById('goToPaymentBtn');
+					goToPaymentBtn.addEventListener('click', function() {
 						const ownerFormIsValid = validateOwnerAccordion();
 						const servicesFormIsValid = validateServicesAccordion();
-						
-						const allFormsValid = ownerFormIsValid && servicesFormIsValid;
-						
-						if (!allFormsValid) {
-							console.log('errors in the form');
+
+						if (!(ownerFormIsValid && servicesFormIsValid)) {
 							return;
 						}
 
-						// Prepare data
+						// Open the payment accordion
+						toggleAccordion('#paymentSection');
+
+						// Only mount Stripe once
+						if (stripeCheckoutMounted) return;
+
+						document.getElementById('paymentLoading').classList.remove('d-none');
+						document.getElementById('paymentError').classList.add('d-none');
+
+						// Prepare merged form data
 						const serviceForm = new FormData(document.querySelector('#serviceForm'));
 						const ownerForm = new FormData(document.querySelector('#ownerForm'));
-
 						const mergedData = {};
-						
 						for (let [key, value] of serviceForm.entries()) { mergedData[key] = value; }
 						for (let [key, value] of ownerForm.entries()) { mergedData[key] = value; }
 
-						// Fetch the CSRF token
-						const csrfToken = getCookie('csrftoken');
-
-						// Send data to Django backend via AJAX
 						fetch("{% url 'order_subscribe' %}", {
 							method: 'POST',
 							headers: {
 								'Content-Type': 'application/json',
-								'X-CSRFToken': getCookie('csrftoken') // make sure you have a getCookie function
+								'X-CSRFToken': getCookie('csrftoken')
 							},
 							body: JSON.stringify(mergedData),
 						})
 						.then(response => {
 							if (!response.ok) {
 								return response.text().then(text => {
-									throw new Error(`Server returned ${response.status}: ${text}`);
+									throw new Error('Server returned ' + response.status + ': ' + text);
 								});
 							}
 							return response.json();
 						})
-						.then(data => {
-							if (data.success) {
-								window.location.href = data.url;  // Redirecting to Stripe
+						.then(async (data) => {
+							document.getElementById('paymentLoading').classList.add('d-none');
+							if (data.success && data.clientSecret) {
+								const checkout = await stripe.initEmbeddedCheckout({
+									clientSecret: data.clientSecret,
+								});
+								checkout.mount('#checkout');
+								stripeCheckoutMounted = true;
 							} else {
-								alert('Failed to submit. Please try again.');
+								document.getElementById('paymentError').textContent = 'Failed to initialise payment. Please try again.';
+								document.getElementById('paymentError').classList.remove('d-none');
 							}
 						})
 						.catch(error => {
-							alert(`Something went wrong: ${error.message}`);
+							document.getElementById('paymentLoading').classList.add('d-none');
+							document.getElementById('paymentError').textContent = 'Something went wrong: ' + error.message;
+							document.getElementById('paymentError').classList.remove('d-none');
 						});
 					});
 

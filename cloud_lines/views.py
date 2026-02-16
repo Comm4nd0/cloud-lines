@@ -8,7 +8,7 @@ from django.conf import settings as django_settings
 from .models import Service, Page, Gallery, Faq, Testimonial, LargeTierQueue, Blog
 from .forms import ContactForm, BlogForm
 from account.models import UserDetail, AttachedService
-from account.views import get_main_account, send_mail, has_permission, redirect_2_login, get_stripe_secret_key
+from account.views import get_main_account, send_mail, has_permission, redirect_2_login, get_stripe_secret_key, get_stripe_public_key
 from account.graphs import get_graphs
 from django.conf import settings
 import json
@@ -372,6 +372,7 @@ def order(request, service=1):
             context['attached_service_upgrade'] = request.GET['upgrade']
 
     context['services'] = Service.objects.filter(active=True)
+    context['stripe_pk'] = get_stripe_public_key(request)
 
     return render(request, 'order.html', context)
 
@@ -448,6 +449,7 @@ def order_subscribe(request):
         
         # create session
         session = stripe.checkout.Session.create(
+            ui_mode='embedded',
             payment_method_types=['card'],
             line_items=[
                 {
@@ -457,12 +459,11 @@ def order_subscribe(request):
             ],
             mode='subscription',
             customer=customer.id,
-            success_url=f"{settings.HTTP_PROTOCOL}://{request.META['HTTP_HOST']}/order/success/{attached_service.id}",
-            cancel_url=f"{settings.HTTP_PROTOCOL}://{request.META['HTTP_HOST']}/",
+            return_url=f"{settings.HTTP_PROTOCOL}://{request.META['HTTP_HOST']}/order/success/{attached_service.id}",
         )
         attached_service.stripe_payment_token = session['id']
         attached_service.save()
-        return JsonResponse({'success': True, 'url': session.url})
+        return JsonResponse({'success': True, 'clientSecret': session.client_secret})
 
     return JsonResponse({'success': False})
 
