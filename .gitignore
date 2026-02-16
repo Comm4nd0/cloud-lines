@@ -16,3 +16,8 @@ pangocairo-1.0
 zappa_settings.json
 testing/chromedriver
 data/*
+
+# Deployment
+deploy.conf
+.env
+docker-compose.override.yml

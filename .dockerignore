@@ -7,3 +7,5 @@ node_modules
 .DS_Store
 venv
 *.egg-info
+deploy.conf
+docker-compose.override.yml
