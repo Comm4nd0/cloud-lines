@@ -51,7 +51,13 @@ separator() {
 # ── Pre-flight checks ───────────────────────────────────────────────────────
 command -v aws   >/dev/null 2>&1 || die "AWS CLI is not installed. Install it: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html"
 command -v ssh   >/dev/null 2>&1 || die "ssh is not installed."
-command -v rsync >/dev/null 2>&1 || die "rsync is not installed."
+
+# rsync is preferred but not required — we fall back to tar+scp
+USE_RSYNC=true
+if ! command -v rsync >/dev/null 2>&1; then
+    USE_RSYNC=false
+    warn "rsync not found — falling back to tar + scp (works in AWS CloudShell)"
+fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -370,18 +376,38 @@ separator
 APP_DIR="/home/ubuntu/cloud-lines"
 
 info "Syncing project files to server..."
-rsync -azP --delete \
-    --exclude '.git' \
-    --exclude '.env' \
-    --exclude '*.pyc' \
-    --exclude '__pycache__' \
-    --exclude '*.sqlite3' \
-    --exclude 'node_modules' \
-    --exclude 'venv' \
-    --exclude '.DS_Store' \
-    --exclude 'deploy.conf' \
-    -e "ssh $SSH_OPTS" \
-    "$SCRIPT_DIR/" "ubuntu@${SERVER_IP}:${APP_DIR}/"
+if [[ "$USE_RSYNC" == true ]]; then
+    rsync -azP --delete \
+        --exclude '.git' \
+        --exclude '.env' \
+        --exclude '*.pyc' \
+        --exclude '__pycache__' \
+        --exclude '*.sqlite3' \
+        --exclude 'node_modules' \
+        --exclude 'venv' \
+        --exclude '.DS_Store' \
+        --exclude 'deploy.conf' \
+        -e "ssh $SSH_OPTS" \
+        "$SCRIPT_DIR/" "ubuntu@${SERVER_IP}:${APP_DIR}/"
+else
+    # Fallback: create a tarball excluding unwanted files, upload, and extract
+    TARBALL=$(mktemp /tmp/cloudlines-deploy.XXXXXX.tar.gz)
+    tar czf "$TARBALL" \
+        --exclude='.git' \
+        --exclude='.env' \
+        --exclude='*.pyc' \
+        --exclude='__pycache__' \
+        --exclude='*.sqlite3' \
+        --exclude='node_modules' \
+        --exclude='venv' \
+        --exclude='.DS_Store' \
+        --exclude='deploy.conf' \
+        -C "$SCRIPT_DIR" .
+    remote "mkdir -p ${APP_DIR}"
+    scp $SSH_OPTS "$TARBALL" "ubuntu@${SERVER_IP}:/tmp/cloudlines-deploy.tar.gz"
+    remote "rm -rf ${APP_DIR:?}/* && tar xzf /tmp/cloudlines-deploy.tar.gz -C ${APP_DIR} && rm /tmp/cloudlines-deploy.tar.gz"
+    rm -f "$TARBALL"
+fi
 ok "Project files synced"
 
 # ── Create .env on the server ────────────────────────────────────────────────
