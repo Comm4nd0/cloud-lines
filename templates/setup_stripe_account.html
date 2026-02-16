@@ -2,7 +2,7 @@
 
 {% if editor and not local_stripe_account.stripe_acct_id %}
     <!-- Trigger Modal Button -->
-    <button type="button" class="btn btn-success float-end mr-2" data-toggle="modal" data-target="#accountSetupModal">
+    <button type="button" class="btn btn-success float-end me-2" data-bs-toggle="modal" data-bs-target="#accountSetupModal">
         Setup Stripe Account
     </button>
 
@@ -12,7 +12,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="accountSetupModalLabel">Stripe Account Setup</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -36,7 +36,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="submit" class="btn btn-success">Submit</button>
                     </div>
                 </form>

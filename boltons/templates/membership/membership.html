@@ -6,7 +6,7 @@
     <!-- ============================================================== -->
     <div class="row page-titles">
         <div class="col-md-6 col-8 justify-content-center">
-            <h3 class="text-themecolor m-b-0 m-t-0">{{ breed.breed_name }}</h3>
+            <h3 class="text-themecolor mb-0 mt-0">{{ breed.breed_name }}</h3>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
                 <li class="breadcrumb-item active">Membership</li>
@@ -15,19 +15,19 @@
         <div class="col-md-6 col-4 justify-content-center">
             {% if add_breed %}
                 {% if editor %}
-                    <a href="#" class="btn float-end hidden-sm-down btn-success"><i class="fad fa-plus-square"></i> Create
+                    <a href="#" class="btn float-end btn-success"><i class="fad fa-plus-square"></i> Create
                     </a>
-                    <a href="#" id="editBreed" class="btn btn-outline-info float-end mr-1"><i class="fad fa-pencil-alt"></i> Edit
+                    <a href="#" id="editBreed" class="btn btn-outline-info float-end me-1"><i class="fad fa-pencil-alt"></i> Edit
                     </a>
                 {% else %}
                     {% include 'login_modal.html' %}
                     <!-- /.modal -->
-                    <button class="btn float-end hidden-sm-down btn-success" data-toggle="modal" data-target="#login"><i class="fad fa-plus-square"></i> Create</button>
+                    <button class="btn float-end btn-success" data-bs-toggle="modal" data-bs-target="#login"><i class="fad fa-plus-square"></i> Create</button>
                 {% endif %}
             {% else %}
                 {% include 'upgrade_modal.html' with type='breeds' %}
-                <button class="btn float-end hidden-sm-down btn-success" data-toggle="modal" data-target="#upgrade"><i class="fad fa-plus-square"></i> Create</button>
-                <a href="#" class="btn btn-outline-info float-end mr-2"><i class="fad fa-pencil-alt"></i> Edit
+                <button class="btn float-end btn-success" data-bs-toggle="modal" data-bs-target="#upgrade"><i class="fad fa-plus-square"></i> Create</button>
+                <a href="#" class="btn btn-outline-info float-end me-2"><i class="fad fa-pencil-alt"></i> Edit
                     </a>
             {% endif %}
         </div>
@@ -43,7 +43,7 @@
                     <h4 class="card-title">{{ breed.breed_name|title }} Details</h4>
                     <h6 class="card-subtitle mb-2 text-muted"></h6>
                     {% if breed.image %}
-                        <img src="{{ breed.image.url }}" style="max-width:350px" class="float-left pr-2">
+                        <img src="{{ breed.image.url }}" style="max-width:350px" class="float-start pe-2">
                     {% endif %}
                     <p class="card-text">{{ breed.breed_description|linebreaks }}</p>
                     <div class="row">

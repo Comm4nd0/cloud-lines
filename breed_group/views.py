@@ -9,6 +9,7 @@ from breed.models import Breed
 from account.views import is_editor, get_main_account, has_permission, redirect_2_login
 from .forms import BreedGroupForm
 from approvals.models import Approval
+from cloudlines.constants import States
 import re
 from json import dumps
 
@@ -204,7 +205,7 @@ def edit_breed_group_form(request, breed_group_name):
 
         if request.user in attached_service.contributors.all():
             if not Approval.objects.filter(breed_group=breed_group).exists():
-                BreedGroup.objects.filter(id=breed_group.id).update(state='edited')
+                BreedGroup.objects.filter(id=breed_group.id).update(state=States.EDITED)
 
                 data = serializers.serialize('yaml', [breed_group, ])
 
@@ -262,7 +263,7 @@ def edit_breed_group_form(request, breed_group_name):
             approvals = Approval.objects.filter(breed_group=breed_group)
             for approval in approvals:
                 approval.delete()
-            breed_group.state = 'approved'
+            breed_group.state = States.APPROVED
 
             # add group members to breed group
             for member in group_members:
@@ -272,7 +273,7 @@ def edit_breed_group_form(request, breed_group_name):
 
         return HttpResponse(dumps({"result": "success"}))
     else:
-        if breed_group.state == 'edited':
+        if breed_group.state == States.EDITED:
             approval = Approval.objects.get(breed_group=breed_group)
             for obj in serializers.deserialize("yaml", approval.data):
                 obj.object.state = 'edited'

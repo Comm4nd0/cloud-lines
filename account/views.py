@@ -26,7 +26,8 @@ from approvals.models import Approval
 from money import Money
 from re import match
 from urllib.parse import urljoin
-from threading import Thread
+from cloudlines.constants import ServiceNames, BoltonTypes, SiteModes, DEFAULT_ANIMAL_TYPE
+from .tasks import sync_custom_fields
 import random
 import string
 import stripe
@@ -96,7 +97,7 @@ def site_mode(request):
         else:
             pending_approvals = False
 
-        if attached_service.service.service_name not in ['Organisation', 'Large Society']:
+        if attached_service.service.service_name not in ServiceNames.UNLIMITED_ANIMAL_TIERS:
             if Pedigree.objects.filter(account=attached_service).count() < attached_service.service.number_of_animals:
                 pedigrees = True
             else:
@@ -128,7 +129,7 @@ def site_mode(request):
 
         return {'service': attached_service,
                 'attached_services': attached_services,
-                'birth_notification': attached_service.boltons.filter(bolton="1").exists(),
+                'birth_notification': attached_service.boltons.filter(bolton=BoltonTypes.BIRTH_NOTIFICATION).exists(),
                 'add_pedigree': pedigrees,
                 'admins': admins,
                 'users': users,
@@ -241,9 +242,9 @@ def get_main_account(user):
     except AttachedService.DoesNotExist:
         # update the attached service to what default
         attached_service, created = AttachedService.objects.get_or_create(user=user_detail,
-                                                                          animal_type='Pedigrees',
-                                                                          site_mode='mammal',
-                                                                          service=Service.objects.get(service_name='Free'))
+                                                                          animal_type=DEFAULT_ANIMAL_TYPE,
+                                                                          site_mode=SiteModes.MAMMAL,
+                                                                          service=Service.objects.get(service_name=ServiceNames.FREE))
         attached_service.install_available = False
         attached_service.active = True
         attached_service.save()
@@ -310,7 +311,7 @@ def user_edit(request):
         new_user_detail = UserDetail.objects.create(user=new_user,
                                                     phone='',
                                                     )
-        attached_service = AttachedService.objects.filter(user=new_user_detail).update(animal_type='Pedigrees',
+        attached_service = AttachedService.objects.filter(user=new_user_detail).update(animal_type=DEFAULT_ANIMAL_TYPE,
                                                                                         install_available=False,
                                                                                         active=True)
         new_user_detail.current_service_id = user_detail.current_service_id
@@ -563,9 +564,9 @@ def profile(request):
 
     context = {'public_api_key': stripe_pk, 'user_detail': UserDetail.objects.get(user=request.user)}
 
-    if request.user == main_account.user.user and context['user_detail'].current_service.service.service_name != 'Free':
-        context['services'] = Service.objects.exclude(service_name='Free')
-        if main_account.service.service_name != 'Organisation':
+    if request.user == main_account.user.user and context['user_detail'].current_service.service.service_name != ServiceNames.FREE:
+        context['services'] = Service.objects.exclude(service_name=ServiceNames.FREE)
+        if main_account.service.service_name != ServiceNames.ORGANISATION:
             context['recommended'] = Service.objects.filter(id=main_account.service.id+1)
         else:
             context['recommended'] = None
@@ -588,7 +589,7 @@ def profile(request):
                     charge['invoice'] = invoice.invoice_pdf
 
             context['charges'] = charges
-        except stripe.error.AuthenticationError:
+        except stripe.AuthenticationError:
             logger.error('Stripe authentication error')
             pass
 
@@ -602,7 +603,7 @@ def profile(request):
             if default_payment_method_id:
                 context['card'] = stripe.PaymentMethod.retrieve(default_payment_method_id)
 
-        except stripe.error.AuthenticationError:
+        except stripe.AuthenticationError:
             pass
 
     return render(request, 'profile.html', context)
@@ -651,7 +652,7 @@ def settings(request, msg=''):
 
     # memberships
     # validate active membership bolton exists
-    if attached_service.boltons.filter(bolton='2', active=True).exists():
+    if attached_service.boltons.filter(bolton=BoltonTypes.MEMBERSHIPS, active=True).exists():
         try:
             # get the membership objects
             membership, created = Membership.objects.get_or_create(account=attached_service)
@@ -707,7 +708,8 @@ def custom_field_edit(request):
         attached_service.custom_fields = json.dumps(custom_fields)
         attached_service.save()
 
-        Thread(target=update_custom_fields, args=(request, attached_service)).start()
+        token, created = Token.objects.get_or_create(user=request.user)
+        sync_custom_fields.delay(attached_service.domain, attached_service.id, str(token))
         return HttpResponse(json.dumps({'success': True}))
 
     elif request.POST.get('formType') == 'edit':
@@ -719,7 +721,8 @@ def custom_field_edit(request):
         attached_service.custom_fields = json.dumps(custom_fields)
         attached_service.save()
 
-        Thread(target=update_custom_fields, args=(request, attached_service)).start()
+        token, created = Token.objects.get_or_create(user=request.user)
+        sync_custom_fields.delay(attached_service.domain, attached_service.id, str(token))
         return HttpResponse(json.dumps({'success': True}))
 
     elif request.POST.get('formType') == 'delete':
@@ -727,21 +730,9 @@ def custom_field_edit(request):
         attached_service.custom_fields = json.dumps(custom_fields)
         attached_service.save()
 
-        Thread(target=update_custom_fields, args=(request, attached_service)).start()
+        token, created = Token.objects.get_or_create(user=request.user)
+        sync_custom_fields.delay(attached_service.domain, attached_service.id, str(token))
         return HttpResponse(json.dumps({'success': True}))
-
-
-def update_custom_fields(request, attached_service):
-    token, created = Token.objects.get_or_create(user=request.user)
-    data = '{"domain": "%s", "account": %s, "token": "%s"}' % (attached_service.domain, attached_service.id, token)
-
-    # get auth token
-    token_res = requests.post(url=urljoin(django_settings.ORCH_URL, '/api-token-auth/'),
-                              data={'username': django_settings.ORCH_USER, 'password': django_settings.ORCH_PASS})
-    ## create header
-    headers = {'Content-Type': 'application/json', 'Authorization': f"token {token_res.json()['token']}"}
-    post_res = requests.post(url=urljoin(django_settings.ORCH_URL, '/api/custom_fields/update_fields/'), headers=headers,
-                             data=data)
 
 
 @login_required(login_url="/account/login")
@@ -815,18 +806,18 @@ def logo_upload(request):
 
     image = request.FILES['file[0]']
     from PIL import Image
-    #from PIL.Image import core as _imaging
     from django.core.files.base import ContentFile
-    import pyheif
+    from pillow_heif import register_heif_opener
     from io import BytesIO
     from os import path
 
+    register_heif_opener()
+
     filename, file_extension = path.splitext(str(request.FILES['file[0]']))
-    if file_extension == ".HEIC":
+    if file_extension.upper() == ".HEIC":
         img_io = BytesIO()
-        heif_file = pyheif.read(request.FILES['file[0]'])
-        image = Image.frombytes(mode=heif_file.mode, size=heif_file.size, data=heif_file.data)
-        image.save(img_io, format='JPEG', quality=100)
+        heif_image = Image.open(request.FILES['file[0]'])
+        heif_image.save(img_io, format='JPEG', quality=100)
         image = ContentFile(img_io.getvalue(), f"{filename}.jpeg")
 
     attached_service.image = image
@@ -927,11 +918,11 @@ def register(request):
             # login
             login(request, user)
 
-            UserDetail.objects.filter(user=user).update(current_service=AttachedService.objects.create(animal_type='Pedigrees',
-                                                                                                       site_mode='mammal',
+            UserDetail.objects.filter(user=user).update(current_service=AttachedService.objects.create(animal_type=DEFAULT_ANIMAL_TYPE,
+                                                                                                       site_mode=SiteModes.MAMMAL,
                                                                                                        install_available=False,
                                                                                                        user=user_detail,
-                                                                                                       service=Service.objects.get(service_name='Free'),
+                                                                                                       service=Service.objects.get(service_name=ServiceNames.FREE),
                                                                                                        active=True))
             # login
             login(request, user)

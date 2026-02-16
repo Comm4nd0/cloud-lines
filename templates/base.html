@@ -73,7 +73,7 @@
             <!-- ============================================================== -->
             <!-- Logo -->
             <!-- ============================================================== -->
-            <div class="navbar-header">
+            <div class="navbar-header d-flex align-items-center">
                 <a class="navbar-brand" href="https://cloud-lines.com">
                     <span>
                         <!-- Light Logo text -->
@@ -84,16 +84,17 @@
             <!-- ============================================================== -->
             <!-- End Logo -->
             <!-- ============================================================== -->
-            <div class="navbar-collapse">
+            <!-- Mobile toggle button -->
+            <button class="navbar-toggler d-md-none ms-auto" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar" aria-controls="mobileSidebar" aria-label="Toggle navigation">
+                <i class="fas fa-bars text-white"></i>
+            </button>
+            <div class="navbar-collapse collapse d-none d-md-flex">
                 <!-- ============================================================== -->
                 <!-- toggle and nav items -->
                 <!-- ============================================================== -->
-                <ul class="navbar-nav mr-auto mt-md-0 ">
-                    <!-- This is  -->
-                    <li class="nav-item"><a class="nav-link nav-toggler hidden-md-up text-muted waves-effect waves-dark"
-                                            href="javascript:void(0)"><i class="ti-menu"></i></a></li>
+                <ul class="navbar-nav me-auto mt-md-0 ">
                     <li class="nav-item"><a
-                            class="nav-link sidebartoggler hidden-sm-down text-muted waves-effect waves-dark"
+                            class="nav-link sidebartoggler d-none d-md-block text-muted waves-effect waves-dark"
                             href="javascript:void(0)"><i class="far fa-arrow-alt-circle-left"></i></a></li>
                     <!-- ============================================================== -->
                     <!-- Comment -->
@@ -109,13 +110,13 @@
                         {% endif %}
 
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-muted waves-effect waves-dark" href="" id="2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle text-muted waves-effect waves-dark" href="#" id="2" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 {% if service.site_mode == 'mammal' %}
                                     <i class="fad fa-paw"></i>
                                 {% else %}
                                     <i class="fad fa-feather-alt"></i>
                                 {% endif %}
-                                {{ service.organisation_or_society_name }}
+                                <span class="d-none d-lg-inline">{{ service.organisation_or_society_name }}</span>
                             </a>
                             <div class="dropdown-menu mailbox animated bounceInDown" aria-labelledby="2">
                                 <ul>
@@ -152,8 +153,8 @@
                 <!-- ============================================================== -->
                 <ul class="navbar-nav my-lg-0 ms-auto">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle text-muted waves-effect waves-dark" href=""
-                           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fad fa-user-circle fa-lg"></i> {{ request.user.get_full_name }}</a>
+                        <a class="nav-link dropdown-toggle text-muted waves-effect waves-dark" href="#"
+                           data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fad fa-user-circle fa-lg"></i> <span class="d-none d-lg-inline">{{ request.user.get_full_name }}</span></a>
                         {% if user.is_authenticated %}
                         <div class="dropdown-menu dropdown-menu-right animated flipInY">
                             <ul class="dropdown-user">
@@ -197,7 +198,7 @@
     <!-- ============================================================== -->
     <!-- Left Sidebar - style you can find in sidebar.scss  -->
     <!-- ============================================================== -->
-    <aside class="left-sidebar">
+    <aside class="left-sidebar d-none d-md-block">
         <!-- Sidebar scroll-->
         <div class="scroll-sidebar">
             <!-- Sidebar navigation-->
@@ -249,7 +250,7 @@
                             {% if add_pedigree %}
                                 <li><a href="{% url 'import' %}">Import Database</a></li>
                             {% else %}
-                                <li><a href="#" data-toggle="modal" data-target="#upgrade">Import Database</a></li>
+                                <li><a href="#" data-bs-toggle="modal" data-bs-target="#upgrade">Import Database</a></li>
                             {% endif %}
                             <li><a href="{% url 'export' %}">Export Database</a></li>
                         </ul>
@@ -264,6 +265,78 @@
         </div>
         <!-- End Sidebar scroll-->
     </aside>
+    <!-- ============================================================== -->
+    <!-- Mobile Offcanvas Sidebar -->
+    <!-- ============================================================== -->
+    <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="mobileSidebar" aria-labelledby="mobileSidebarLabel" style="background-color: #fff; max-width: 280px;">
+        <div class="offcanvas-header" style="background-color: #44AAAC;">
+            <h5 class="offcanvas-title text-white" id="mobileSidebarLabel">Menu</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <nav class="sidebar-nav">
+                <ul id="mobileSidebarnav" class="list-unstyled mb-0">
+                    <li class="nav-small-cap">NAVIGATION</li>
+                    <li>
+                        <a class="d-block px-3 py-2" href="{% url 'dashboard' %}"><i class="fad fa-home me-2"></i> Dashboard</a>
+                    </li>
+                    <li>
+                        <a class="d-block px-3 py-2" href="{% url 'pedigree_search' %}"><i class="{% if service.site_mode == 'mammal' %}fad fa-paw{% else %}fad fa-egg{% endif %} me-2"></i> {{ service.animal_type|title }}</a>
+                    </li>
+                    <li>
+                        <a class="d-block px-3 py-2" href="{% url 'breeders' %}"><i class="fad fa-users me-2"></i> Breeders</a>
+                    </li>
+                    {% if service.site_mode == 'poultry' %}
+                        <li>
+                            <a class="d-block px-3 py-2" href="{% url 'breed_groups' %}"><i class="fad fa-object-ungroup me-2"></i> Breed Groups</a>
+                        </li>
+                    {% endif %}
+                    <li>
+                        <a class="d-block px-3 py-2" href="{% url 'breeds' %}"><i class="fad fa-random me-2"></i> Breed{% if service.service.multi_breed %}s{% endif %}</a>
+                    </li>
+                    {% if service.metrics %}
+                    <li>
+                        <a class="d-block px-3 py-2" href="{% url 'metrics' %}"><i class="fad fa-chart-bar me-2"></i> Metrics</a>
+                    </li>
+                    {% endif %}
+                    {% if service.boltons.all %}
+                    <li class="nav-small-cap">BOLTONS</li>
+                        {% if birth_notification %}
+                            <li><a class="d-block px-3 py-2" href="{% url 'bn_home' %}"><i class="fad fa-puzzle-piece me-2"></i> Birth Notifications</a></li>
+                        {% endif %}
+                    {% endif %}
+                    {% if editor %}
+                    <li class="nav-small-cap">TOOLS</li>
+                        {% if editor or breeds_editable|length > 0 %}
+                            <li><a class="d-block px-3 py-2" href="{% url 'reports' %}"><i class="fad fa-file-alt me-2"></i> Reports</a></li>
+                        {% endif %}
+                        {% if add_pedigree %}
+                            <li><a class="d-block px-3 py-2" href="{% url 'import' %}"><i class="fad fa-file-import me-2"></i> Import Database</a></li>
+                        {% else %}
+                            <li><a class="d-block px-3 py-2" href="#" data-bs-toggle="modal" data-bs-target="#upgrade"><i class="fad fa-file-import me-2"></i> Import Database</a></li>
+                        {% endif %}
+                        <li><a class="d-block px-3 py-2" href="{% url 'export' %}"><i class="fad fa-file-export me-2"></i> Export Database</a></li>
+                    {% endif %}
+                    <li class="nav-small-cap">HELP</li>
+                    <li>
+                        <a class="d-block px-3 py-2" href="{% url 'support' %}"><i class="fad fa-hands-helping me-2"></i> Support</a>
+                    </li>
+                    <li><hr class="my-1"></li>
+                    <li>
+                        <a class="d-block px-3 py-2" href="{% url 'profile' %}"><i class="fad fa-user-cog me-2"></i> Account Settings</a>
+                    </li>
+                    {% if editor or breeds_editable|length > 0 %}
+                    <li>
+                        <a class="d-block px-3 py-2" href="{% url 'settings' %}"><i class="fad fa-cogs me-2"></i> Site Settings</a>
+                    </li>
+                    {% endif %}
+                    <li>
+                        <a class="d-block px-3 py-2 text-danger" href="{% url 'cl_logout' %}"><i class="fad fa-power-off me-2"></i> Logout</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
     <!-- ============================================================== -->
     <!-- End Left Sidebar - style you can find in sidebar.scss  -->
     <!-- ============================================================== -->
@@ -325,8 +398,6 @@
 <!-- ============================================================== -->
 <!-- Bootstrap tether Core JavaScript -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<!-- <script src="{% static 'assets/plugins/bootstrap/js/popper.min.js' %}"></script> -->
-<script src="{% static 'assets/plugins/bootstrap/js/bootstrap.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
 <!-- slimscrollbar scrollbar JavaScript -->

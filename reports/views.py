@@ -9,6 +9,7 @@ from account.views import is_editor, get_main_account, has_permission, redirect_
 from pedigree.models import Pedigree
 from breed.models import Breed
 from .models import ReportQueue
+from .tasks import run_census_report, run_all_report, run_all_boo_report, run_fangr_report
 from xhtml2pdf import pisa
 from datetime import datetime
 from json import dumps
@@ -60,21 +61,13 @@ def census(request, type):
                                                 file_type=type,
                                                 complete=False)
 
-    token_res = requests.post(url=f'{settings.ORCH_URL}/api-token-auth/',
-                              data={'username': settings.ORCH_USER, 'password': settings.ORCH_PASS})
-    ## create header
-    headers = {'Content-Type': 'application/json', 'Authorization': f"token {token_res.json()['token']}"}
-    ## get pedigrees
     if attached_service.domain:
         domain = attached_service.domain
     else:
         domain = "https://cloud-lines.com"
 
     token, created = Token.objects.get_or_create(user=request.user)
-
-    data = '{"queue_id": %d, "domain": "%s", "token": "%s"}' % (queue_item.id, domain, token)
-
-    post_res = requests.post(url=f'{settings.ORCH_URL}/api/reports/census/', headers=headers, data=data)
+    run_census_report.delay(queue_item.id, domain, str(token))
 
     return redirect('reports')
 
@@ -129,21 +122,13 @@ def all(request, type):
                                             file_type="xls",
                                             complete=False)
 
-    token_res = requests.post(url=f'{settings.ORCH_URL}/api-token-auth/',
-                              data={'username': settings.ORCH_USER, 'password': settings.ORCH_PASS})
-    ## create header
-    headers = {'Content-Type': 'application/json', 'Authorization': f"token {token_res.json()['token']}"}
-    ## get pedigrees
     if attached_service.domain:
         domain = attached_service.domain
     else:
         domain = "https://cloud-lines.com"
 
     token, created = Token.objects.get_or_create(user=request.user)
-
-    data = '{"queue_id": %d, "domain": "%s", "token": "%s"}' % (queue_item.id, domain, token)
-
-    post_res = requests.post(url=f'{settings.ORCH_URL}/api/reports/all/', headers=headers, data=data)
+    run_all_report.delay(queue_item.id, domain, str(token))
 
     return redirect('reports')
 
@@ -172,26 +157,14 @@ def all_animals_by_boo(request):
                                             file_type="xls",
                                             complete=False)
 
-    token_res = requests.post(url=f'{settings.ORCH_URL}/api-token-auth/',
-                              data={'username': settings.ORCH_USER, 'password': settings.ORCH_PASS})
-    ## create header
-    headers = {'Content-Type': 'application/json', 'Authorization': f"token {token_res.json()['token']}"}
-    ## get pedigrees
     if attached_service.domain:
         domain = attached_service.domain
     else:
         domain = "https://cloud-lines.com"
 
     token, created = Token.objects.get_or_create(user=request.user)
+    run_all_boo_report.delay(queue_item.id, domain, str(token), prefix_type, breeder_prefix)
 
-    data = '{"queue_id": %d, "domain": "%s", "token": "%s", "boo": "%s", "prefix": "%s"}' % (queue_item.id,
-                                                                                         domain,
-                                                                                         token, 
-                                                                                         prefix_type,
-                                                                                         breeder_prefix)
-
-    post_res = requests.post(url=f'{settings.ORCH_URL}/api/reports/all_boo/', headers=headers, data=data)
-    print(post_res.text)
     return redirect('reports')
 
 
@@ -212,26 +185,17 @@ def fangr(request):
                                             file_type="xls",
                                             complete=False)
 
-    token_res = requests.post(url=f'{settings.ORCH_URL}/api-token-auth/',
-                              data={'username': settings.ORCH_USER, 'password': settings.ORCH_PASS})
-    ## create header
-    headers = {'Content-Type': 'application/json', 'Authorization': f"token {token_res.json()['token']}"}
-    ## get pedigrees
     if attached_service.domain:
         domain = attached_service.domain
     else:
         domain = "https://cloud-lines.com"
 
     token, created = Token.objects.get_or_create(user=request.user)
-
-    data = '{"queue_id": %d, "domain": "%s", "account": %d, "year": "%s", "breed": "%d", "email": "%s", "token": "%s"}' % (queue_item.id,
-                                                                                                            domain,
-                                                                                                            attached_service.id,
-                                                                                                            request.POST.get('year'),
-                                                                                                            Breed.objects.filter(breed_name__iexact=request.POST.get('breed')).first().id,
-                                                                                                            request.user.email,
-                                                                                                            token)
-
-    post_res = requests.post(url=f'{settings.ORCH_URL}/api/reports/fangr/', headers=headers, data=data)
+    breed_id = Breed.objects.filter(breed_name__iexact=request.POST.get('breed')).first().id
+    run_fangr_report.delay(
+        queue_item.id, domain, attached_service.id,
+        request.POST.get('year'), breed_id,
+        request.user.email, str(token)
+    )
 
     return redirect('reports')

@@ -6,7 +6,7 @@
     <!-- ============================================================== -->
     <div class="row page-titles">
         <div class="col-md-6 col-8 justify-content-center">
-            <h3 class="text-themecolor m-b-0 m-t-0">{% if service.site_mode == 'mammal' %}Pedigree {% else %}Poultry {% endif %} Breeds</h3>
+            <h3 class="text-themecolor mb-0 mt-0">{% if service.site_mode == 'mammal' %}Pedigree {% else %}Poultry {% endif %} Breeds</h3>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
                 <li class="breadcrumb-item active">Breed{% if service.service.multi_breed %}s{% endif %}</li>
@@ -15,16 +15,16 @@
         <div class="col-md-6 col-4 justify-content-center">
             {% if add_breed %}
                 {% if editor %}
-                    <a href="{% url 'new_breed_form' %}" class="btn float-end hidden-sm-down btn-success"><i class="fad fa-plus-square"></i> Create
+                    <a href="{% url 'new_breed_form' %}" class="btn float-end btn-success"><i class="fad fa-plus-square"></i> Create
                     </a>
                 {% else %}
                     {% include 'login_modal.html' %}
                     <!-- /.modal -->
-                    <button class="btn float-end hidden-sm-down btn-success" data-toggle="modal" data-target="#login"><i class="fad fa-plus-square"></i> Create</button>
+                    <button class="btn float-end btn-success" data-bs-toggle="modal" data-bs-target="#login"><i class="fad fa-plus-square"></i> Create</button>
                 {% endif %}
             {% else %}
                 {% include 'upgrade_modal.html' with type='breeds' %}
-                <button class="btn float-end hidden-sm-down btn-success" data-toggle="modal" data-target="#upgrade"><i class="fad fa-plus-square"></i> Create</button>
+                <button class="btn float-end btn-success" data-bs-toggle="modal" data-bs-target="#upgrade"><i class="fad fa-plus-square"></i> Create</button>
             {% endif %}
 
         </div>
@@ -36,10 +36,10 @@
     <div class="row">
         {% for breed in breeds.all %}
             <!-- column -->
-            <div class="col-lg-3 col-md-6 img-responsive">
+            <div class="col-lg-3 col-md-6 img-fluid">
                 <!-- Card -->
                 <div class="card">
-                    <img class="card-img-top img-responsive" src="{% if breed.image %}{{ breed.image.url }}{% else %}{% static 'assets/images/default-breed.jpeg' %}{% endif %}" alt="{{ breed.breed_name|title }}">
+                    <img class="card-img-top img-fluid" src="{% if breed.image %}{{ breed.image.url }}{% else %}{% static 'assets/images/default-breed.jpeg' %}{% endif %}" alt="{{ breed.breed_name|title }}">
                     <div class="card-body">
                         <h4 class="card-title">{{ breed.breed_name|title }}</h4>
                         <p class="card-text">{{ breed.description|truncatewords:50|linebreaks }}</p>
@@ -48,7 +48,7 @@
                             <a href="{% url 'edit_breed_form' breed.id %}" class="btn btn-outline-info"><i class="fad fa-pencil-alt"></i> Edit
                             </a>
                         {% else %}
-                            <button class="btn btn-outline-info" data-toggle="modal" data-target="#login"><i class="fad fa-pencil-alt"></i> Edit</button>
+                            <button class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#login"><i class="fad fa-pencil-alt"></i> Edit</button>
                         {% endif %}
                     </div>
                 </div>

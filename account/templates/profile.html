@@ -47,7 +47,7 @@
     <!-- ============================================================== -->
     <div class="row page-titles">
         <div class="col-md-6 col-8 justify-content-center">
-            <h3 class="text-themecolor m-b-0 m-t-0">Account Settings</h3>
+            <h3 class="text-themecolor mb-0 mt-0">Account Settings</h3>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
                 <li class="breadcrumb-item active">Account Settings</li>
@@ -58,7 +58,7 @@
 <!-- Row -->
     <div class="row">
         <!-- Column -->
-        <div class="col-md-12 col-lg-4 col-xlg-3">
+        <div class="col-md-12 col-lg-4 col-xl-3">
             <div class="card">
                 <div class="card-body">
                     <center class="mt-4"> <i class="fad fa-user-circle fa-4x"></i>
@@ -88,14 +88,14 @@
         </div>
         <!-- Column -->
         <!-- Column -->
-        <div class="col-md-12 col-lg-8 col-xlg-9">
+        <div class="col-md-12 col-lg-8 col-xl-9">
             <div class="card">
                 <!-- Nav tabs -->
                 <ul class="nav nav-tabs profile-tab" role="tablist">
-                    <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#account" role="tab">Account</a> </li>
-                    <li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#settings" role="tab">Settings</a> </li>
+                    <li class="nav-item"> <a class="nav-link active" data-bs-toggle="tab" href="#account" role="tab">Account</a> </li>
+                    <li class="nav-item"> <a class="nav-link" data-bs-toggle="tab" href="#settings" role="tab">Settings</a> </li>
                     {% if request.user == service.user.user %}
-                    <li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#billing" role="tab">Billing</a> </li>
+                    <li class="nav-item"> <a class="nav-link" data-bs-toggle="tab" href="#billing" role="tab">Billing</a> </li>
                     {% endif %}
                 </ul>
                 <!-- Tab panes -->
@@ -103,19 +103,19 @@
                     <div class="tab-pane active" id="account" role="tabpanel">
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-md-3 col-xs-6 border-right"> <strong>Full Name</strong>
+                                <div class="col-md-3 col-6 border-right"> <strong>Full Name</strong>
                                     <br>
                                     <p class="text-muted">{{ request.user.get_full_name }}</p>
                                 </div>
-                                <div class="col-md-3 col-xs-6 border-right"> <strong>Username</strong>
+                                <div class="col-md-3 col-6 border-right"> <strong>Username</strong>
                                     <br>
                                     <p class="text-muted">{{ request.user.username }}</p>
                                 </div>
-                                <div class="col-md-3 col-xs-6 border-right"> <strong>Email</strong>
+                                <div class="col-md-3 col-6 border-right"> <strong>Email</strong>
                                     <br>
                                     <p class="text-muted">{{ request.user.email }}</p>
                                 </div>
-                                <div class="col-md-3 col-xs-6"> <strong>Account Type</strong>
+                                <div class="col-md-3 col-6"> <strong>Account Type</strong>
                                     <br>
                                     {% if request.user == service.user.user %}
                                         <p class="text-muted">Service Owner</p>
@@ -138,7 +138,7 @@
                                 <div class="row pricing-plan pt-2">
                                     {% for plan in services.all %}
                                         {% if plan.service_name != service.service.service_name %}
-                                            <div class="col-md-3 col-xs-12 col-sm-6 no-padding">
+                                            <div class="col-md-3 col-12 col-sm-6 no-padding">
                                                 <div class="pricing-box {% if plan.id == recommended.first.id %}featured-plan{% endif %}">
                                                     <div class="pricing-body">
                                                         <div class="pricing-header">
@@ -231,7 +231,7 @@
                             </form>
                             <div class="row">
                                 <div class="col-2">
-                                    <button id="selectUserSettings" class="btn btn-success float-left">Update Profile</button>
+                                    <button id="selectUserSettings" class="btn btn-success float-start">Update Profile</button>
                                 </div>
                                 <div class="col-10">
                                     <div class="alert  d-none" id="userSettingsAlert"> <i class="ti-user"></i> <div id="userSettingsMessage"></div>
@@ -289,7 +289,7 @@
                                     <tbody>
                                     {% for charge in charges %}
                                     <tr>
-                                        <td scope="row"><p data-toggle="tooltip" data-placement="top" title="{{ charge.id }}">{{ charge.id|slice:"-6:" }}</p></td>
+                                        <td scope="row"><p data-bs-toggle="tooltip" data-placement="top" title="{{ charge.id }}">{{ charge.id|slice:"-6:" }}</p></td>
                                         <td>{{ charge.amount }}</td>
                                         <td>{{ charge.created }}</td>
                                         <td><span class="label {% if charge.paid %}label-light-success{% else %}label-light-danger{% endif %}"> {% if charge.paid %}Yes{% else %}No{% endif %} </span></td>
@@ -312,7 +312,7 @@
                                         </thead>
                                         <tbody>
                                             <tr>
-                                                <td scope="row" id="card_id"><p data-toggle="tooltip" data-placement="top" title="{{ card.id }}">{{ card.id|slice:"-6:" }}</p></td>
+                                                <td scope="row" id="card_id"><p data-bs-toggle="tooltip" data-placement="top" title="{{ card.id }}">{{ card.id|slice:"-6:" }}</p></td>
                                                 <td id="card_type">{{ card.card.brand }}</td>
                                                 <td id="card_last4">...**** {{ card.card.last4 }}</td>
                                                 <td id="card_exp">{{ card.card.exp_month }}/{{ card.card.exp_year }}</td>
@@ -327,7 +327,7 @@
                                         <div class="modal-content">
                                             <div class="modal-header">
                                                 <h4 class="modal-title" id="vcenter">Cancel Subscription</h4>
-                                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                                <button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true">×</button>
                                             </div>
                                             <div class="modal-body">
                                                 <h4>Are you sure you want to cancel your subscription to Cloud-Lines?</h4>
@@ -336,7 +336,7 @@
                                             <div id="cancelSubSuccessMsg" class="alert alert-success d-none"><strong>Sorry to see you go!</strong> Your subscription has now been cancled.</div>
                                             <div class="modal-footer">
                                                 <button id="cancelSubscriptionConfirm" type="button" class="btn btn-danger waves-effect">Cancel my subscription</button>
-                                                <button type="button" class="btn btn-info waves-effect" data-dismiss="modal">Close</button>
+                                                <button type="button" class="btn btn-info waves-effect" data-bs-dismiss="modal">Close</button>
                                             </div>
                                         </div>
                                         <!-- /.modal-content -->
@@ -345,7 +345,7 @@
                                 </div>
                                 <!-- /.modal -->
 
-                                <a href="#" class="btn btn-outline-danger float-left" data-toggle="modal" data-target="#cancelSub" rel="4">Cancel Subscription</a>
+                                <a href="#" class="btn btn-outline-danger float-start" data-bs-toggle="modal" data-bs-target="#cancelSub" rel="4">Cancel Subscription</a>
                                 <a href="{% url 'update_card' %}" class="btn btn-outline-info float-end" rel="4">Update Card</a>
                                 <button id="selectCardButton" type="button" style="display: none;" class="tab-linker" rel="4"></button>
 

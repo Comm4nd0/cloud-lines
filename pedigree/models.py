@@ -4,18 +4,15 @@ from breeder.models import Breeder
 from breed.models import Breed
 from account.models import AttachedService
 from django.core.validators import MaxValueValidator, MinValueValidator
+from cloudlines.constants import States, PedigreeStatus, PedigreeSex
 
 
 class Pedigree(models.Model):
     class Meta:
         ordering = ['-reg_no']
 
-    STATES = (
-        ('edited', 'Edited'),
-        ('unapproved', 'Unapproved'),
-        ('approved', 'Approved'),
-    )
-    state = models.CharField(max_length=10, choices=STATES, null=True, default='approved', verbose_name="State")
+    STATES = States.CHOICES
+    state = models.CharField(max_length=10, choices=STATES, null=True, default=States.APPROVED, verbose_name="State")
     creator = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, verbose_name="Creator")
     account = models.ForeignKey(AttachedService, on_delete=models.SET_NULL, blank=True, null=True, verbose_name="Account")
     breeder = models.ForeignKey(Breeder, on_delete=models.SET_NULL, blank=True, null=True, verbose_name="Breeder", help_text="Often the same as Current Owner")
@@ -28,23 +25,14 @@ class Pedigree(models.Model):
     dob = models.DateField(blank=True, null=True, verbose_name='Date of Birth', help_text="Date formats: 1984/09/31, 84/09/31, 31/09/1984, 31/09/84, 1984-09-31, 84-09-31, 31-09-1984, 31-09-84")
     dod = models.DateField(blank=True, null=True, verbose_name='Date of Death', help_text="Date formats: 1984/09/31, 84/09/31, 31/09/1984, 31/09/84, 1984-09-31, 84-09-31, 31-09-1984, 31-09-84")
 
-    STATUSES = (
-        ('dead', 'Dead'),
-        ('alive', 'Alive'),
-        ('unknown', 'Unknown'),
-    )
+    STATUSES = PedigreeStatus.CHOICES
 
-    status = models.CharField(max_length=10, choices=STATUSES, null=True, default='unknown',
+    status = models.CharField(max_length=10, choices=STATUSES, null=True, default=PedigreeStatus.UNKNOWN,
                            help_text="Accepted formats: dead, alive, unknown", verbose_name="Status")
 
-    GENDERS = (
-        ('male', 'Male'),
-        ('female', 'Female'),
-        ('castrated', 'Castrated'),
-        ('unknown', 'Unknown')
-    )
+    GENDERS = PedigreeSex.CHOICES
 
-    sex = models.CharField(max_length=10, choices=GENDERS, null=True, default='unknown', 
+    sex = models.CharField(max_length=10, choices=GENDERS, null=True, default=PedigreeSex.UNKNOWN,
                             help_text="Accepted formats: male, female, castrated, unknown", verbose_name="Sex")
 
     litter_size = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(50)], default=1,
@@ -102,12 +90,8 @@ def user_directory_path(instance, filename):
 
 
 class PedigreeImage(models.Model):
-    STATES = (
-        ('edited', 'Edited'),
-        ('unapproved', 'Unapproved'),
-        ('approved', 'Approved'),
-    )
-    state = models.CharField(max_length=10, choices=STATES, null=True, default='approved')
+    STATES = States.CHOICES
+    state = models.CharField(max_length=10, choices=STATES, null=True, default=States.APPROVED)
     reg_no = models.ForeignKey(Pedigree, related_name='images', on_delete=models.SET_NULL, blank=True, null=True)
     account = models.ForeignKey(AttachedService, on_delete=models.SET_NULL, blank=True, null=True)
     image = models.ImageField(upload_to=user_directory_path)

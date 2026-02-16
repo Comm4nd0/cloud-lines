@@ -21,7 +21,7 @@
     <!-- ============================================================== -->
     <div class="row page-titles">
         <div class="col-md-6 col-8 justify-content-center">
-            <h3 class="text-themecolor m-b-0 m-t-0">Metrics</h3>
+            <h3 class="text-themecolor mb-0 mt-0">Metrics</h3>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
                 <li class="breadcrumb-item active">Metrics</li>
@@ -32,7 +32,7 @@
                 {% csrf_token %}
                 <div class="btn-group float-end">
                     <button type="button" class="btn btn-success dropdown-toggle"
-                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         PopRep Export
                     </button>
                     <div class="dropdown-menu">
@@ -195,7 +195,7 @@
                             {% elif breeds.all.count > 1 %}
                                 <div class="btn-group btn-block">
                                     <button id="coiBtn" type="button" class="btn btn-success dropdown-toggle mx-1"
-                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" {% if breeds_editable|length > 0 %}data-toggle="tooltip" data-placement="top" title="Can only run for your editable breeds"{% endif %}>
+                                        data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" {% if breeds_editable|length > 0 %}data-bs-toggle="tooltip" data-placement="top" title="Can only run for your editable breeds"{% endif %}>
                                         Run COI
                                     </button>
                                     <div class="dropdown-menu">
@@ -222,7 +222,7 @@
                         {% elif breeds.all.count > 1 %}
                             <div class="btn-group btn-block">
                                 <button id="meanKinshipBtn" type="button" class="btn btn-success dropdown-toggle mx-1"
-                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" {% if breeds_editable|length > 0 %}data-toggle="tooltip" data-placement="top" title="Can only run for your editable breeds"{% endif %}>
+                                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" {% if breeds_editable|length > 0 %}data-bs-toggle="tooltip" data-placement="top" title="Can only run for your editable breeds"{% endif %}>
                                     Run Mean Kinship
                                 </button>
                                 <div class="dropdown-menu">

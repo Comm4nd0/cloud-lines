@@ -88,20 +88,15 @@ class ApiPedigreeSerializer(serializers.ModelSerializer):
                   "current_owner_breeding_prefix",
                   "breed_breed_name")
 
-        def to_representation(self, instance):
-            ret = super(ApiPedigreeSerializer, self).to_representation(instance)
-            # check the request is list view or detail view
-            is_list_view = isinstance(self.instance, list)
-            if is_list_view:
-                parent_father_id = ret.pop('parent_father', None)
-                print(parent_father_id)
-                parent_father = Pedigree.objects.filter(id=parent_father_id).first()
-                user_name = parent_father.reg_no if parent_father else ""
-                extra_ret = {
-                    "parent_father": user_name
-                }
-                ret.update(extra_ret)
-            return ret
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        # In list view, resolve parent_father ID to reg_no
+        is_list_view = isinstance(self.instance, list)
+        if is_list_view:
+            parent_father_id = ret.pop('parent_father', None)
+            parent_father = Pedigree.objects.filter(id=parent_father_id).first()
+            ret["parent_father"] = parent_father.reg_no if parent_father else ""
+        return ret
 
 
 class ApiPedigreeImageSerializer(serializers.ModelSerializer):

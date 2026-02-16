@@ -1,0 +1,11 @@
+.git
+.env
+*.pyc
+__pycache__
+*.sqlite3
+node_modules
+.DS_Store
+venv
+*.egg-info
+deploy.conf
+docker-compose.override.yml

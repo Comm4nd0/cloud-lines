@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from cloud_lines.models import Service
 from cloud_lines.models import Bolton
 from json import dumps
+from cloudlines.constants import BoltonTypes, SiteModes
 
 
 def user_directory_path(instance, filename):
@@ -43,9 +44,7 @@ class AttachedBolton(models.Model):
     stripe_acct_id = models.CharField(max_length=255, blank=True)
 
     def bolton_name(self):
-        bolton_dict = {'1': 'Birth Notification',
-                       '2': 'Memberships'}
-        return bolton_dict[self.bolton]
+        return BoltonTypes.NAMES[self.bolton]
 
     def __str__(self):
         return self.bolton_name()
@@ -72,11 +71,8 @@ class AttachedService(models.Model):
     pedigree_charging = models.BooleanField(default=False)
     pedigrees_visible = models.BooleanField(default=False) # can users see each others pedigrees
 
-    SITE_MODES = (
-        ('mammal', 'Mammal'),
-        ('poultry', 'Poultry'),
-    )
-    site_mode = models.CharField(max_length=13, choices=SITE_MODES, blank=True, null=True, default='poultry')
+    SITE_MODES = SiteModes.CHOICES
+    site_mode = models.CharField(max_length=13, choices=SITE_MODES, blank=True, null=True, default=SiteModes.POULTRY)
 
     INCREMENTS = (
         ('monthly', 'Monthly'),

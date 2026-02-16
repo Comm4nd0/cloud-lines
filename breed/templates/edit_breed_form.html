@@ -8,7 +8,7 @@
     <!-- ============================================================== -->
     <div class="row page-titles">
         <div class="col-md-6 col-8 justify-content-center">
-            <h3 class="text-themecolor m-b-0 m-t-0">Edit Breed Form</h3>
+            <h3 class="text-themecolor mb-0 mt-0">Edit Breed Form</h3>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'breeds' %}">Breed{% if service.service.multi_breed %}s{% endif %}</a></li>
@@ -87,13 +87,13 @@
                                                     Metrics can be enabled in the <a href="{% url 'settings' %}">Site Settings</a> section.</p>
                                             {% endif %}
                                         {% elif field.label == 'Breed admins' %}
-                                            <div class="row pr-4">
-                                                <div class="col-10 pr-0">
+                                            <div class="row pe-4">
+                                                <div class="col-10 pe-0">
                                                     <div id="users" class="input-group">
                                                         <input id="id_breed_admin" type="text" class="typeahead form-control" placeholder="Breed Admin">
                                                     </div>
                                                 </div>
-                                                <div class="col-2 pl-0">
+                                                <div class="col-2 ps-0">
                                                     <button id="addBreedAdminBtn" class="btn btn-info" type="button">Add</button>
                                                 </div>
                                             </div>
@@ -128,7 +128,7 @@
                                     <div class="col-12">
                                         <button type="button" id="submitEditBreedForm" class="btn btn-success">Submit</button>
                                         <a href="{% url 'breeds' %}"><button type="button" class="btn btn-inverse">Cancel</button></a>
-                                        <button type="button" id="deleteBreed" data-toggle="modal" data-target="#delete" class="model_img img-fluid btn btn-danger float-end">Delete</button>
+                                        <button type="button" id="deleteBreed" data-bs-toggle="modal" data-bs-target="#delete" class="model_img img-fluid btn btn-danger float-end">Delete</button>
                                     </div>
                                 </div>
                             </div>

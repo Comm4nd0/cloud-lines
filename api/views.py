@@ -4,7 +4,6 @@ from rest_framework.decorators import api_view
 from rest_framework import viewsets
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.viewsets import GenericViewSet
-from rest_framework.authentication import BasicAuthentication, TokenAuthentication, SessionAuthentication
 from django_filters.rest_framework import DjangoFilterBackend
 from .serializers import ApiLargeTierQueueSerializer, \
     ApiReportQueueSerializer, \
@@ -35,42 +34,45 @@ from cloud_lines.models import Service, Faq, Bolton, Update
 from account.models import UserDetail, AttachedService
 from metrics.models import KinshipQueue, DataValidatorQueue, StudAdvisorQueue
 from memberships.models import Membership
+from cloudlines.constants import PermissionLevels
 from rest_framework.filters import SearchFilter
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import permission_classes
 from account.views import get_main_account
 from django.db.models import Q
 from django.contrib.auth.models import User
 
 
-
-@permission_classes((AllowAny, ))
 class LargeTierQueueViews(viewsets.ModelViewSet):
-    authentication_classes = (TokenAuthentication, BasicAuthentication, SessionAuthentication)
+    permission_classes = [IsAdminUser]
     queryset = LargeTierQueue.objects.all()
     serializer_class = ApiLargeTierQueueSerializer
     filter_backends = [SearchFilter]
     search_fields = '__all__'
 
 
-@permission_classes((AllowAny, ))
 class ReportQueueViews(viewsets.ModelViewSet):
-    authentication_classes = (TokenAuthentication, BasicAuthentication, SessionAuthentication)
-    queryset = ReportQueue.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = ApiReportQueueSerializer
     filter_backends = [SearchFilter]
     search_fields = '__all__'
 
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser:
+            return ReportQueue.objects.all()
+        main_account = get_main_account(user)
+        return ReportQueue.objects.filter(account=main_account)
 
-@permission_classes((AllowAny, ))
-class ServicesViews(viewsets.ModelViewSet):
+
+class ServicesViews(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
     serializer_class = ApiServiceSerializer
     queryset = Service.objects.all()
     filter_backends = [SearchFilter]
 
 
 class AttachedServiceViews(viewsets.ModelViewSet):
-    authentication_classes = (TokenAuthentication, BasicAuthentication, SessionAuthentication)
     serializer_class = ApiAttachedServiceSerializer
     filter_backends = [SearchFilter]
     permission_classes = [IsAuthenticated]
@@ -81,7 +83,7 @@ class AttachedServiceViews(viewsets.ModelViewSet):
         return AttachedService.objects.filter(Q(admin_users=user, active=True) |
                                               Q(contributors=user, active=True) |
                                               Q(read_only_users=user, active=True) |
-                                              Q(user=user_detail, active=True)).distinct().distinct()
+                                              Q(user=user_detail, active=True)).distinct()
 
 
 
@@ -111,11 +113,11 @@ def membership_add_edit_user(request):
         user_detail.save()
 
         # add user to attached service
-        if request.data['permission_level'] == 'read_only_users':
+        if request.data['permission_level'] == PermissionLevels.READ_ONLY:
             membership.account.read_only_users.add(user)
-        elif request.data['permission_level'] == 'contributors':
+        elif request.data['permission_level'] == PermissionLevels.CONTRIBUTORS:
             membership.account.contributors.add(user)
-        elif request.data['permission_level'] == 'admin_users':
+        elif request.data['permission_level'] == PermissionLevels.ADMIN:
             membership.account.admin_users.add(user)
         else:
             return Response({
@@ -130,7 +132,6 @@ def membership_add_edit_user(request):
 
 
 class PedigreeViews(viewsets.ModelViewSet):
-    authentication_classes = (TokenAuthentication, BasicAuthentication, SessionAuthentication)
     serializer_class = ApiPedigreeSerializer
     filter_backends = [DjangoFilterBackend]
     filter_fields = '__all__'
@@ -150,10 +151,10 @@ class PedigreeViews(viewsets.ModelViewSet):
             except AttachedService.DoesNotExist:
                 return Pedigree.objects.none()
 
-            if not (self.request.user.is_superuser or 
-                    self.request.user == main_account.user.user or 
+            if not (self.request.user.is_superuser or
+                    self.request.user == main_account.user.user or
                     self.request.user in main_account.admin_users.all()):
-                return HttpResponseForbidden("You don't have permission to access these resources.")
+                return Pedigree.objects.none()
 
         else:
             main_account = get_main_account(self.request.user)
@@ -172,8 +173,6 @@ class PedigreeViews(viewsets.ModelViewSet):
         if current_owner_breeding_prefix is not None:
             queryset = queryset.filter(current_owner__breeding_prefix=current_owner_breeding_prefix)
 
-        #queryset = queryset.filter(status='alive')
-
         return queryset
 
 
@@ -189,7 +188,6 @@ class PedigreeImageViews(viewsets.ModelViewSet):
 
 
 class BreederViews(viewsets.ModelViewSet):
-    authentication_classes = (TokenAuthentication, BasicAuthentication, SessionAuthentication)
     serializer_class = ApiBreederSerializer
     filter_backends = [DjangoFilterBackend]
     filter_fields = '__all__'
@@ -205,7 +203,6 @@ class BreederViews(viewsets.ModelViewSet):
 
 
 class BreedViews(viewsets.ModelViewSet):
-    authentication_classes = (TokenAuthentication, BasicAuthentication, SessionAuthentication)
     serializer_class = ApiBreedSerializer
     filter_backends = [SearchFilter]
     permission_classes = [IsAuthenticated]
@@ -227,32 +224,28 @@ class BreedGroupViews(viewsets.ModelViewSet):
         return BreedGroup.objects.filter(account=main_account)
 
 
-@permission_classes((AllowAny, ))
-class FaqViews(viewsets.ModelViewSet):
+class FaqViews(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
     serializer_class = ApiFaqSerializer
     queryset = Faq.objects.all()
     filter_backends = [SearchFilter]
 
 
-@permission_classes((AllowAny, ))
-class BoltonViews(viewsets.ModelViewSet):
+class BoltonViews(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
     serializer_class = ApiBoltonSerializer
     queryset = Bolton.objects.all()
     filter_backends = [SearchFilter]
 
-@permission_classes((AllowAny, ))
-class UpdateViews(viewsets.ModelViewSet):
+
+class UpdateViews(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
     serializer_class = ApiUpdateSerializer
     queryset = Update.objects.all().order_by('-date')[:3]
     filter_backends = [SearchFilter]
 
-# class Authenticate(viewsets.ModelViewSet):
-#     queryset = Update.objects.all()
-#     serializer_class = ApiAuthentication
-
 
 class KinshipViews(viewsets.ModelViewSet):
-    authentication_classes = (TokenAuthentication, BasicAuthentication)
     serializer_class = ApiKinshipSerializer
     filter_backends = [SearchFilter]
     permission_classes = [IsAuthenticated]
@@ -260,11 +253,10 @@ class KinshipViews(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         main_account = get_main_account(user)
-        return KinshipQueue.objects.all()
+        return KinshipQueue.objects.filter(account=main_account)
 
 
 class DataValidatorViews(viewsets.ModelViewSet):
-    authentication_classes = (TokenAuthentication, BasicAuthentication)
     serializer_class = ApiDataValidationSerializer
     filter_backends = [SearchFilter]
     permission_classes = [IsAuthenticated]
@@ -272,11 +264,10 @@ class DataValidatorViews(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         main_account = get_main_account(user)
-        return DataValidatorQueue.objects.all()
+        return DataValidatorQueue.objects.filter(account=main_account)
 
 
 class StudAdvisorViews(viewsets.ModelViewSet):
-    authentication_classes = (TokenAuthentication, BasicAuthentication)
     serializer_class = ApiStudAdvisorSerializer
     filter_backends = [SearchFilter]
     permission_classes = [IsAuthenticated]
@@ -284,11 +275,10 @@ class StudAdvisorViews(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         main_account = get_main_account(user)
-        return StudAdvisorQueue.objects.all()
+        return StudAdvisorQueue.objects.filter(account=main_account)
 
 
 class BirthNotificationViews(ListModelMixin, RetrieveModelMixin, GenericViewSet):
-    authentication_classes = (TokenAuthentication, BasicAuthentication, SessionAuthentication)
     serializer_class = ApiBirthNotificationSerializer
     filter_backends = [SearchFilter]
     permission_classes = [IsAuthenticated]
@@ -296,11 +286,10 @@ class BirthNotificationViews(ListModelMixin, RetrieveModelMixin, GenericViewSet)
     def get_queryset(self):
         user = self.request.user
         main_account = get_main_account(user)
-        return BirthNotification.objects.all()
+        return BirthNotification.objects.filter(account=main_account)
 
 
 class BnChildViews(ListModelMixin, RetrieveModelMixin, GenericViewSet):
-    authentication_classes = (TokenAuthentication, BasicAuthentication, SessionAuthentication)
     serializer_class = ApiBnChildSerializer
     filter_backends = [SearchFilter]
     permission_classes = [IsAuthenticated]
@@ -308,7 +297,8 @@ class BnChildViews(ListModelMixin, RetrieveModelMixin, GenericViewSet):
     def get_queryset(self):
         user = self.request.user
         main_account = get_main_account(user)
-        return BnChild.objects.all()
+        birth_notifications = BirthNotification.objects.filter(account=main_account)
+        return BnChild.objects.filter(births__in=birth_notifications)
 
 
 ########## Auth ###########

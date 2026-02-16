@@ -211,7 +211,7 @@ def get_pedigree_payment_session(request, pedigree):
             stripe_account=stripe_account.stripe_acct_id  # Include this if you are using Stripe Connect
         )
         return payment_intent
-    except stripe.error.InvalidRequestError:
+    except stripe.InvalidRequestError:
         session = stripe.checkout.Session.retrieve(
             pedigree.stripe_payment_token,
             stripe_account=stripe_account.stripe_acct_id

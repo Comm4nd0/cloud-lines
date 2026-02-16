@@ -96,17 +96,14 @@ class Testimonial(models.Model):
 
 class LargeTierQueue(models.Model):
     from account.models import UserDetail, AttachedService
+    from cloudlines.constants import BuildStates
     subdomain = models.CharField(max_length=255, blank=True, unique=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='luser')
     user_detail = models.ForeignKey(UserDetail, on_delete=models.CASCADE, null=True, related_name='user_detail')
     attached_service = models.ForeignKey(AttachedService, on_delete=models.CASCADE, null=True, related_name='lattached_service')
 
-    BUILD_STATE = (
-        ('waiting', 'Waiting'),
-        ('building', 'Building'),
-        ('complete', 'Complete'),
-    )
-    build_state = models.CharField(max_length=20, choices=BUILD_STATE, default='waiting')
+    BUILD_STATE = BuildStates.CHOICES
+    build_state = models.CharField(max_length=20, choices=BUILD_STATE, default=BuildStates.WAITING)
     build_status = models.CharField(max_length=255, blank=True)
     percentage_complete = models.IntegerField(default=0, null=True)
 

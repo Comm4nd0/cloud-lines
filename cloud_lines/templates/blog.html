@@ -39,39 +39,39 @@
 	<div class="content-wrap">
 		<div class="container clearfix">
 			{% if request.user.username == 'sheepishsophie' or request.user.is_superuser %}
-			<button id="newEditArticleModalBtn" class="button bg-color button-rounded button-large float-end" data-toggle="modal" data-target=".newEditArticleModal">New Article</button>
+			<button id="newEditArticleModalBtn" class="button bg-color button-rounded button-large float-end" data-bs-toggle="modal" data-bs-target=".newEditArticleModal">New Article</button>
 			<div class="modal fade newEditArticleModal" tabindex="-1" role="dialog" aria-labelledby="newEditArticleModal" aria-hidden="true">
 				<div class="modal-dialog modal-lg">
 					<div class="modal-body">
 						<div class="modal-content">
 							<div class="modal-header">
 								<h4 class="modal-title" id="myModalLabel">New/Edit Article</h4>
-								<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+								<button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true">&times;</button>
 							</div>
 							<div class="modal-body">
 								<form id="blogform" action="{% url 'blog' %}" method="POST" enctype="multipart/form-data">
 									{% csrf_token %}
 									<div class="form-group mb-4">
-										<label class="float-left">Title</label>
+										<label class="float-start">Title</label>
 										<input id="title" class="form-control" name="title" type="text" required value="">
 									</div>
 									<div class="form-row mb-4">
 										<div class="form-group col-md-6">
-											<label class="float-left">Embed Link</label>
+											<label class="float-start">Embed Link</label>
 											<input id="video" class="form-control" name="video" type="text" value="">
 										</div>
 										<div class="form-group col-md-6">
-											<label class="float-left">Image</label>
+											<label class="float-start">Image</label>
 											<input id="image" class="form-control" name="image" type="file" value="">
 										</div>
 									</div>
 									<div class="form-group mb-4">
-										<label class="float-left">Content</label>
+										<label class="float-start">Content</label>
 										<textarea id="article_content" name="content" cols="40" rows="10" class="form-control" required></textarea>
 									</div>
 									<input id="articleID" class="form-control" name="articleID" type="hidden" value="0">
 									<div class="modal-footer">
-										<button class="button" data-dismiss="modal"><i class="flaticon-cancel-12"></i> Discard</button>
+										<button class="button" data-bs-dismiss="modal"><i class="flaticon-cancel-12"></i> Discard</button>
 										<button type="submit" id="saveOrg" class="button bg-color">Save</button>
 									</div>
 								</form>
@@ -100,7 +100,7 @@
 							<li><i class="icon-calendar3"></i> {{ article.date_added }}</li>
 							{% if request.user.username == 'sheepishsophie' or request.user.is_superuser %}
 								<li><a href="#" id="edit{{ article.id }}"><i class="icon-edit"></i> Edit</a></li>
-								<li><i data-toggle="modal" data-target=".deleteArticleModal" class="icon-trash text-danger"> Delete</i></li>
+								<li><i data-bs-toggle="modal" data-bs-target=".deleteArticleModal" class="icon-trash text-danger"> Delete</i></li>
 							{% endif %}
 						</ul>
 						<div class="entry-content">
@@ -123,13 +123,13 @@
 								<div class="modal-content">
 									<div class="modal-header">
 										<h4 class="modal-title" id="myModalLabel">Delete Article</h4>
-										<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+										<button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true">&times;</button>
 									</div>
 									<div class="modal-body">
 										<form id="delBlogform" action="{% url 'delete_blog' article.id %}" method="POST">
 											{% csrf_token %}
 												<p>Are you sure you want to delete: {{ article.title }}</p>
-												<button class="button" data-dismiss="modal"><i class="flaticon-cancel-12"></i> Discard</button>
+												<button class="button" data-bs-dismiss="modal"><i class="flaticon-cancel-12"></i> Discard</button>
 												<button type="submit" id="deleteArticle" class="button bg-color">Delete</button>
 										</form>
 									</div>

@@ -8,7 +8,7 @@ from django.conf import settings as django_settings
 from .models import Service, Page, Gallery, Faq, Testimonial, LargeTierQueue, Blog
 from .forms import ContactForm, BlogForm
 from account.models import UserDetail, AttachedService
-from account.views import get_main_account, send_mail, has_permission, redirect_2_login, get_stripe_secret_key
+from account.views import get_main_account, send_mail, has_permission, redirect_2_login, get_stripe_secret_key, get_stripe_public_key
 from account.graphs import get_graphs
 from django.conf import settings
 import json
@@ -22,6 +22,8 @@ from breed_group.models import BreedGroup
 from django.db.models import Q
 from urllib.parse import urlparse
 from re import match
+from cloudlines.constants import States, PedigreeStatus, PedigreeSex, ServiceNames
+from .tasks import provision_large_tier
 import requests
 
 
@@ -31,9 +33,9 @@ def dashboard(request):
     if main_account.domain and not match('(.*).cloud-lines.com', request.META['HTTP_HOST']):
         return HttpResponseRedirect(main_account.domain)
 
-    total_pedigrees = Pedigree.objects.filter(account=main_account).exclude(state='unapproved').count()
-    top_pedigrees = Pedigree.objects.filter(account=main_account).order_by('-date_added').exclude(state='unapproved')[:5]
-    breed_groups = BreedGroup.objects.filter(account=main_account).order_by('-date_added').exclude(state='unapproved')[:5]
+    total_pedigrees = Pedigree.objects.filter(account=main_account).exclude(state=States.UNAPPROVED).count()
+    top_pedigrees = Pedigree.objects.filter(account=main_account).order_by('-date_added').exclude(state=States.UNAPPROVED)[:5]
+    breed_groups = BreedGroup.objects.filter(account=main_account).order_by('-date_added').exclude(state=States.UNAPPROVED)[:5]
     latest_breeders = Breeder.objects.filter(account=main_account).order_by('-id')[:5]
 
     if total_pedigrees > 0 \
@@ -50,7 +52,7 @@ def dashboard(request):
             previous_year_count = 0
             for year in [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]:
                 year_count = previous_year_count + Pedigree.objects.filter(account=main_account, 
-                                    date_added__year=current_year-year).exclude(state='unapproved').count()
+                                    date_added__year=current_year-year).exclude(state=States.UNAPPROVED).count()
                 previous_year_count = year_count
                 total_added_chart[date.strftime("%Y")] = {'pedigrees_added': year_count}
                 if year != 0:
@@ -68,7 +70,7 @@ def dashboard(request):
                 registered_chart[date.year] = {}
                 for breed in Breed.objects.filter(account=main_account):
                     registered_chart[date.year][breed.breed_name] = Pedigree.objects.filter(breed=breed, 
-                                                        account=main_account, date_of_registration__year=date.year).exclude(state='unapproved').count()
+                                                        account=main_account, date_of_registration__year=date.year).exclude(state=States.UNAPPROVED).count()
                 
                 if year != 0:
                     date = date.replace(day=1)
@@ -85,8 +87,8 @@ def dashboard(request):
         current_alive_chart = {}
         if 'current_alive' in user_graphs['selected']:
             for breed in Breed.objects.filter(account=main_account):
-                current_alive_chart[breed] = {'male': Pedigree.objects.filter(Q(breed__breed_name=breed, account=main_account) & Q(sex='male') & Q(status='alive')).exclude(state='unapproved').count(),
-                                    'female': Pedigree.objects.filter(Q(breed__breed_name=breed, account=main_account) & Q(sex='female') & Q(status='alive')).exclude(state='unapproved').count()}
+                current_alive_chart[breed] = {'male': Pedigree.objects.filter(Q(breed__breed_name=breed, account=main_account) & Q(sex=PedigreeSex.MALE) & Q(status=PedigreeStatus.ALIVE)).exclude(state=States.UNAPPROVED).count(),
+                                    'female': Pedigree.objects.filter(Q(breed__breed_name=breed, account=main_account) & Q(sex=PedigreeSex.FEMALE) & Q(status=PedigreeStatus.ALIVE)).exclude(state=States.UNAPPROVED).count()}
         # number of pedigrees born graph
         born_chart = {}
         if 'born' in user_graphs['selected']:
@@ -98,7 +100,7 @@ def dashboard(request):
                 born_chart[date.year] = {}
                 for breed in Breed.objects.filter(account=main_account):
                     born_chart[date.year][breed.breed_name] = Pedigree.objects.filter(breed=breed, 
-                                                        account=main_account, dob__year=date.year).exclude(state='unapproved').count()
+                                                        account=main_account, dob__year=date.year).exclude(state=States.UNAPPROVED).count()
                 
                 if year != 0:
                     date = date.replace(day=1)
@@ -360,7 +362,7 @@ def order(request, service=1):
     if 'upgrade' in request.GET:
         try:
             context['customer'] = stripe.Customer.retrieve(context['user_detail'].stripe_id)
-        except stripe.error.InvalidRequestError:
+        except stripe.InvalidRequestError:
             pass
 
         # get the attached_service to upgrade
@@ -370,6 +372,7 @@ def order(request, service=1):
             context['attached_service_upgrade'] = request.GET['upgrade']
 
     context['services'] = Service.objects.filter(active=True)
+    context['stripe_pk'] = get_stripe_public_key(request)
 
     return render(request, 'order.html', context)
 
@@ -446,6 +449,7 @@ def order_subscribe(request):
         
         # create session
         session = stripe.checkout.Session.create(
+            ui_mode='embedded',
             payment_method_types=['card'],
             line_items=[
                 {
@@ -455,19 +459,18 @@ def order_subscribe(request):
             ],
             mode='subscription',
             customer=customer.id,
-            success_url=f"{settings.HTTP_PROTOCOL}://{request.META['HTTP_HOST']}/order/success/{attached_service.id}",
-            cancel_url=f"{settings.HTTP_PROTOCOL}://{request.META['HTTP_HOST']}/",
+            return_url=f"{settings.HTTP_PROTOCOL}://{request.META['HTTP_HOST']}/order/success/{attached_service.id}",
         )
         attached_service.stripe_payment_token = session['id']
         attached_service.save()
-        return JsonResponse({'success': True, 'url': session.url})
+        return JsonResponse({'success': True, 'clientSecret': session.client_secret})
 
     return JsonResponse({'success': False})
 
 
 def order_success(request, attached_service_id):
     stripe.api_key = get_stripe_secret_key(request)
-    large_tier = ['Small Society', 'Large Society', 'Organisation']
+    large_tier = ServiceNames.LARGE_TIERS
     # get the attached service object
     attached_service = AttachedService.objects.get(id=attached_service_id)
 
@@ -475,7 +478,7 @@ def order_success(request, attached_service_id):
         session = stripe.checkout.Session.retrieve(
             attached_service.stripe_payment_token,
         )
-    except stripe.error.StripeError as e:
+    except stripe.StripeError as e:
         # Handle error
         return JsonResponse({'error': str(e)}, status=400)
 
@@ -515,14 +518,7 @@ def order_success(request, attached_service_id):
             sub_domain = domain_parts[0] if len(domain_parts) > 2 else None
             queue_item = LargeTierQueue.objects.create(subdomain=sub_domain, user=attached_service.user.user, user_detail=attached_service.user, attached_service=attached_service)
 
-            token_res = requests.post(url=f'{settings.ORCH_URL}/api-token-auth/',
-                                      data={'username': settings.ORCH_USER, 'password': settings.ORCH_PASS})
-            ## create header
-            headers = {'Content-Type': 'application/json', 'Authorization': f"token {token_res.json()['token']}"}
-            ## get pedigrees
-            data = '{"queue_id": %d}' % queue_item.id
-
-            post_res = requests.post(url=f'{settings.ORCH_URL}/api/tasks/new_large_tier/', headers=headers, data=data)
+            provision_large_tier.delay(queue_item.id)
             return redirect('build', queue_item.id)
         else:
             return redirect('dashboard')

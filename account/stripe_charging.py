@@ -7,6 +7,7 @@ import stripe
 from .currencies import get_countries
 from .models import StripeAccount
 from account.views import get_main_account
+from cloudlines.constants import BoltonTypes
 
 
 class StripeAccountManager:
@@ -53,7 +54,7 @@ class StripeAccountManager:
         # birth notification product
         if not self.stripe_account.bn_stripe_product_id:
             # create product
-            product = stripe.Product.create(name='Birth Notification',
+            product = stripe.Product.create(name=BoltonTypes.NAMES[BoltonTypes.BIRTH_NOTIFICATION],
                                             stripe_account=self.stripe_account.stripe_acct_id)
             self.stripe_account.bn_stripe_product_id = product.id
         # pedigree reg product
@@ -67,7 +68,7 @@ class StripeAccountManager:
         # Logic for creating an edit account link
         try:
             return stripe.Account.create_login_link(self.stripe_account.stripe_acct_id)
-        except stripe.error.InvalidRequestError:
+        except stripe.InvalidRequestError:
             if self.stripe_account.stripe_acct_id:
                 return self.get_account_link()
             else:

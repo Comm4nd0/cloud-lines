@@ -2,7 +2,7 @@
     <a href="{% url 'new_pedigree_form' %}{% if parent %}?parent={{ parent }}{% endif %}" class="btn btn-sm btn-outline-success waves-effect waves-light">
         <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}</a>
 {% else %}
-    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-toggle="modal" data-target="#login">
+    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#login">
         <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
     </button>
 {% endif %}

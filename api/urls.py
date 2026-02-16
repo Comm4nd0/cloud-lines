@@ -4,7 +4,7 @@ from rest_framework import routers
 
 router = routers.DefaultRouter()
 router.register('large-tier-queue', views.LargeTierQueueViews)
-router.register('report-queue', views.ReportQueueViews)
+router.register('report-queue', views.ReportQueueViews, basename='ReportQueue')
 router.register('pedigrees', views.PedigreeViews, basename='Pedigree')
 router.register('pedigree-images', views.PedigreeImageViews, basename='PedigreeImage')
 router.register('breeders', views.BreederViews, basename='Breeder')

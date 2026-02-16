@@ -12,7 +12,7 @@ from json import dumps, loads
 from datetime import datetime, timedelta
 import logging
 import requests
-import pytz
+from zoneinfo import ZoneInfo
 import boto3
 import urllib.parse
 import urllib.request
@@ -22,6 +22,8 @@ from itertools import chain
 
 from account.views import has_permission, redirect_2_login
 from django.contrib.auth.decorators import login_required
+from cloudlines.constants import ServiceNames, PedigreeStatus, PedigreeSex, States
+from .tasks import run_data_validator, run_coi as run_coi_task, run_kinship as run_kinship_task, run_mean_kinship as run_mean_kinship_task, run_stud_advisor as run_stud_advisor_task
 
 
 logger = logging.getLogger(__name__)
@@ -31,10 +33,13 @@ def calc_last_run(attached_service, obj, dt=None, timezone="UTC"):
 
     if dt is None:
         dt = datetime.utcnow()
-    timezone = pytz.timezone(timezone)
-    timezone_aware_date = timezone.localize(dt, is_dst=None)
+    tz = ZoneInfo(timezone)
+    timezone_aware_date = dt.replace(tzinfo=tz)
 
-    if timezone_aware_date.tzinfo._dst.seconds != 0:
+    # Check if DST is in effect by comparing UTC offset with standard offset
+    utc_offset = timezone_aware_date.utcoffset()
+    std_offset = tz.utcoffset(datetime(timezone_aware_date.year, 1, 1))
+    if utc_offset != std_offset:
         obj.last_run += timedelta(minutes=attached_service.coi_timeout)
     else:
         obj.last_run += timedelta(minutes=attached_service.coi_timeout * 2)
@@ -110,7 +115,7 @@ def data_validation(request):
                                                                          'breed__breed_name',
                                                                          'status')
     # create unique paths
-    if attached_service.service.service_name in ('Small Society', 'Large Society', 'Organisation'):
+    if attached_service.service.service_name in ServiceNames.LARGE_TIERS:
         host = attached_service.domain.partition('://')[2]
         subdomain = host.partition('.')[0]
         local_output = f"/tmp/dv_{subdomain}_output.json"
@@ -134,8 +139,7 @@ def data_validation(request):
             'dv_q_id': dv.id,
             'token': str(token)}
 
-    coi_raw = requests.post(urllib.parse.urljoin(settings.METRICS_URL, "/api/metrics/data_validator/"),
-                            json=dumps(data, cls=DjangoJSONEncoder))
+    run_data_validator.delay(remote_output, file_name, attached_service.domain, dv.id, str(token))
 
     response = {'status': 'success'}
     return HttpResponse(dumps(response))
@@ -178,7 +182,7 @@ def coi(request):
                                                                          'status')
 
     # create unique paths
-    if attached_service.service.service_name in ('Small Society', 'Large Society', 'Organisation'):
+    if attached_service.service.service_name in ServiceNames.LARGE_TIERS:
         host = attached_service.domain.partition('://')[2]
         subdomain = host.partition('.')[0]
         local_output = f"/tmp/coi_{subdomain}_output.json"
@@ -201,10 +205,7 @@ def coi(request):
             'domain': attached_service.domain,
             'token': str(token)}
 
-    coi_raw = requests.post(urllib.parse.urljoin(settings.METRICS_URL, "/api/metrics/coi/"),
-                            json=dumps(data, cls=DjangoJSONEncoder))
-
-    #coi_dict = loads(coi_raw.json())
+    run_coi_task.delay(remote_output, file_name, attached_service.domain, str(token))
 
 
 def kinship(request):
@@ -240,7 +241,7 @@ def kinship(request):
         return HttpResponse(dumps(response))
     
     # check mother is a living female
-    if mother.sex.lower() != 'female' or mother.status.lower() != 'alive':
+    if mother.sex.lower() != PedigreeSex.FEMALE or mother.status.lower() != PedigreeStatus.ALIVE:
         response = {'status': 'error',
                     'msg': f"Mother ({request.POST['mother']}) is not a living female!"
                     }
@@ -256,7 +257,7 @@ def kinship(request):
         return HttpResponse(dumps(response))
 
     # check that father is a living male
-    if father.sex.lower() != 'male' or father.status.lower() != 'alive':
+    if father.sex.lower() != PedigreeSex.MALE or father.status.lower() != PedigreeStatus.ALIVE:
         response = {'status': 'error',
                     'msg': f"Father ({request.POST['father']}) is not a living male!"
                     }
@@ -288,7 +289,7 @@ def kinship(request):
                     }
         return HttpResponse(dumps(response))
 
-    if attached_service.service.service_name in ('Small Society', 'Large Society', 'Organisation'):
+    if attached_service.service.service_name in ServiceNames.LARGE_TIERS:
         host = attached_service.domain.partition('://')[2]
         subdomain = host.partition('.')[0]
         local_output = f"/tmp/k_{subdomain}-{epoch}_output.json"
@@ -314,21 +315,12 @@ def kinship(request):
             'kin_q_id': kin.id,
             'token': str(token)}
 
-    coi_raw = requests.post(urllib.parse.urljoin(settings.METRICS_URL, f'/api/metrics/{mother.id}/{father.id}/kinship/'),
-                            json=dumps(data, cls=DjangoJSONEncoder), stream=True)
+    run_kinship_task.delay(mother.id, father.id, remote_output, file_name, attached_service.domain, kin.id, str(token))
 
-    if coi_raw.status_code == 200:
-        response = {'status': 'message',
-                    'msg': "",
-                    'item_id': kin.id
-                    }
-    else:
-        kin.delete()
-        send_mail('Metrics server down', "Metrics", "Check Metrics server")
-        response = {'status': 'fail',
-                    'msg': "Failed to communicate with the server!",
-                    'item_id': ''
-                    }
+    response = {'status': 'message',
+                'msg': "",
+                'item_id': kin.id
+                }
     return HttpResponse(dumps(response))
 
 
@@ -378,7 +370,7 @@ def run_mean_kinship(request):
 def mean_kinship(request):
     attached_service = get_main_account(request.user)
     
-    pedigrees = Pedigree.objects.filter(account=attached_service, breed=request.POST['breed'], status='alive').values('id',
+    pedigrees = Pedigree.objects.filter(account=attached_service, breed=request.POST['breed'], status=PedigreeStatus.ALIVE).values('id',
                                                                                         'parent_father__id',
                                                                                         'parent_mother__id',
                                                                                         'sex',
@@ -386,7 +378,7 @@ def mean_kinship(request):
                                                                                         'status')
     if len(pedigrees) > 1:
         # create unique paths
-        if attached_service.service.service_name in ('Small Society', 'Large Society', 'Organisation'):
+        if attached_service.service.service_name in ServiceNames.LARGE_TIERS:
             host = attached_service.domain.partition('://')[2]
             subdomain = host.partition('.')[0]
             local_output = f"/tmp/mk_{subdomain}_output.json"
@@ -409,21 +401,16 @@ def mean_kinship(request):
                 'domain': attached_service.domain,
                 'token': str(token)}
 
-        coi_raw = requests.post(urllib.parse.urljoin(settings.METRICS_URL, '/api/metrics/mean_kinship/'),
-                                json=dumps(data, cls=DjangoJSONEncoder), stream=True)
-
-        # coi_dict = loads(coi_raw.json())
-        # for pedigree, value in coi_dict.items():
-        #     Pedigree.objects.filter(account=attached_service, id=pedigree.strip('X')).update(mean_kinship=value['1'])
+        run_mean_kinship_task.delay(remote_output, file_name, attached_service.domain, str(token))
 
 
 def stud_advisor_pedigree_details(request, pedigree):
     attached_service = get_main_account(request.user)
-    cois = Pedigree.objects.filter(account=attached_service, breed=pedigree.breed, status='alive').values('coi')
+    cois = Pedigree.objects.filter(account=attached_service, breed=pedigree.breed, status=PedigreeStatus.ALIVE).values('coi')
     total = 0
     for coi in cois.all():
         total += coi['coi']
-    breed_mean_coi = total / Pedigree.objects.filter(account=attached_service, breed=pedigree.breed, status__icontains='alive').count()
+    breed_mean_coi = total / Pedigree.objects.filter(account=attached_service, breed=pedigree.breed, status__icontains=PedigreeStatus.ALIVE).count()
 
     pedigree_details = {'reg_no': pedigree.reg_no,
                       'name': pedigree.name,
@@ -474,7 +461,7 @@ def stud_advisor(request):
         raise PermissionDenied()
 
     # check that pedigree is a living female
-    # if pedigree.sex.lower() != 'female' or pedigree.status.lower() != 'alive':
+    # if pedigree.sex.lower() != PedigreeSex.FEMALE or pedigree.status.lower() != PedigreeStatus.ALIVE:
     #     response = {
     #         'status': 'fail',
     #         'msg': f"pedigree ({reg_no}) is not a living female!",
@@ -504,7 +491,7 @@ def stud_advisor(request):
                                                                    'breed__breed_name',
                                                                    'status')
 
-    if attached_service.service.service_name in ('Small Society', 'Large Society', 'Organisation'):
+    if attached_service.service.service_name in ServiceNames.LARGE_TIERS:
         host = attached_service.domain.partition('://')[2]
         subdomain = host.partition('.')[0]
         local_output = f"/tmp/sa_{subdomain}-{epoch}_output.json"
@@ -537,22 +524,18 @@ def stud_advisor(request):
             'token': str(token),
             'queue_id': sa.id}
 
-    coi_raw = requests.post(urllib.parse.urljoin(settings.METRICS_URL, '/api/metrics/stud_advisor/'),
-                            json=dumps(data, cls=DjangoJSONEncoder), stream=True)
-    if coi_raw.status_code == 200:
-        response = {'status': 'message',
-                    'msg': "",
-                    'item_id': sa.id
-                    }
-        return HttpResponse(dumps(response))
-    else:
-        sa.delete()
-        send_mail('Metrics server down', "Metrics", "Check Metrics server")
-        response = {'status': 'fail',
-                    'msg': "Failed to communicate with the server!",
-                    'item_id': ''
-                    }
-        return HttpResponse(dumps(response))
+    run_stud_advisor_task.delay(
+        remote_output, file_name, attached_service.domain,
+        pedigree.id, pedigree.mean_kinship,
+        pedigree_details['breed_mean_coi'],
+        pedigree.breed.mk_threshold,
+        str(token), sa.id
+    )
+    response = {'status': 'message',
+                'msg': "",
+                'item_id': sa.id
+                }
+    return HttpResponse(dumps(response))
 
 
 def stud_advisor_results(request, id):
@@ -653,12 +636,12 @@ def poprep_export(request):
 
     writer = csv.writer(response, delimiter="|")
 
-    for pedigree in Pedigree.objects.filter(account=attached_service, breed=breed).exclude(Q(state='unapproved') | Q(status='unknown') | Q(sex='unknown') | Q(sex='castrated')).values('reg_no', 'parent_father__reg_no', 'parent_mother__reg_no', 'dob', 'sex'):
-        if pedigree['sex'] == "male":
+    for pedigree in Pedigree.objects.filter(account=attached_service, breed=breed).exclude(Q(state=States.UNAPPROVED) | Q(status=PedigreeStatus.UNKNOWN) | Q(sex=PedigreeSex.UNKNOWN) | Q(sex=PedigreeSex.CASTRATED)).values('reg_no', 'parent_father__reg_no', 'parent_mother__reg_no', 'dob', 'sex'):
+        if pedigree['sex'] == PedigreeSex.MALE:
             sex = "M"
-        elif pedigree['sex'] == "female":
+        elif pedigree['sex'] == PedigreeSex.FEMALE:
             sex = "F"
-        elif pedigree['sex'] == "castrated":
+        elif pedigree['sex'] == PedigreeSex.CASTRATED:
             sex = "M"
         else:
             sex = ""
