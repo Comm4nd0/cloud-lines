@@ -28,6 +28,7 @@ from json import dumps
 from urllib.parse import urljoin
 import requests
 import re
+from cloudlines.constants import BnChildStatus
 import stripe
 
 
@@ -67,7 +68,7 @@ class BnHome(BirthNotificationBase):
         context['latest'] = context['birth_notifications'].filter(account=context['attached_service'], paid=True).order_by('-id')[:10]
 
         context['total_living'] = context['birth_notifications'].filter(births__status="alive", paid=True).count()
-        context['total_deceased'] = context['birth_notifications'].filter(births__status="deceased", paid=True).count()
+        context['total_deceased'] = context['birth_notifications'].filter(births__status=BnChildStatus.DECEASED, paid=True).count()
         context['approvals'] = BirthNotification.objects.filter(account=context['attached_service'], paid=True , complete=False)
 
         return context

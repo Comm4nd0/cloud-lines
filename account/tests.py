@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from account.models import UserDetail, AttachedService, AttachedBolton, StripeAccount
 from cloud_lines.models import Service
+from cloudlines.constants import BoltonTypes, SiteModes
 
 
 class UserDetailModelTest(TestCase):
@@ -26,19 +27,19 @@ class UserDetailModelTest(TestCase):
 
 class AttachedBoltonModelTest(TestCase):
     def test_bolton_name_birth_notification(self):
-        bolton = AttachedBolton.objects.create(bolton='1')
-        self.assertEqual(bolton.bolton_name(), 'Birth Notification')
+        bolton = AttachedBolton.objects.create(bolton=BoltonTypes.BIRTH_NOTIFICATION)
+        self.assertEqual(bolton.bolton_name(), BoltonTypes.NAMES[BoltonTypes.BIRTH_NOTIFICATION])
 
     def test_bolton_name_memberships(self):
-        bolton = AttachedBolton.objects.create(bolton='2')
-        self.assertEqual(bolton.bolton_name(), 'Memberships')
+        bolton = AttachedBolton.objects.create(bolton=BoltonTypes.MEMBERSHIPS)
+        self.assertEqual(bolton.bolton_name(), BoltonTypes.NAMES[BoltonTypes.MEMBERSHIPS])
 
     def test_str_returns_bolton_name(self):
-        bolton = AttachedBolton.objects.create(bolton='1')
-        self.assertEqual(str(bolton), 'Birth Notification')
+        bolton = AttachedBolton.objects.create(bolton=BoltonTypes.BIRTH_NOTIFICATION)
+        self.assertEqual(str(bolton), BoltonTypes.NAMES[BoltonTypes.BIRTH_NOTIFICATION])
 
     def test_active_default_false(self):
-        bolton = AttachedBolton.objects.create(bolton='1')
+        bolton = AttachedBolton.objects.create(bolton=BoltonTypes.BIRTH_NOTIFICATION)
         self.assertFalse(bolton.active)
 
 
@@ -75,7 +76,7 @@ class AttachedServiceModelTest(TestCase):
         self.assertEqual(str(self.account), 'Test Society')
 
     def test_default_site_mode_is_poultry(self):
-        self.assertEqual(self.account.site_mode, 'poultry')
+        self.assertEqual(self.account.site_mode, SiteModes.POULTRY)
 
     def test_default_mother_title(self):
         self.assertEqual(self.account.mother_title, 'Mother')
@@ -120,7 +121,7 @@ class AttachedServiceModelTest(TestCase):
         self.assertIn(ro, self.account.read_only_users.all())
 
     def test_boltons_m2m(self):
-        bolton = AttachedBolton.objects.create(bolton='1')
+        bolton = AttachedBolton.objects.create(bolton=BoltonTypes.BIRTH_NOTIFICATION)
         self.account.boltons.add(bolton)
         self.assertIn(bolton, self.account.boltons.all())
 

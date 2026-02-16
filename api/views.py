@@ -34,6 +34,7 @@ from cloud_lines.models import Service, Faq, Bolton, Update
 from account.models import UserDetail, AttachedService
 from metrics.models import KinshipQueue, DataValidatorQueue, StudAdvisorQueue
 from memberships.models import Membership
+from cloudlines.constants import PermissionLevels
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import permission_classes
@@ -112,11 +113,11 @@ def membership_add_edit_user(request):
         user_detail.save()
 
         # add user to attached service
-        if request.data['permission_level'] == 'read_only_users':
+        if request.data['permission_level'] == PermissionLevels.READ_ONLY:
             membership.account.read_only_users.add(user)
-        elif request.data['permission_level'] == 'contributors':
+        elif request.data['permission_level'] == PermissionLevels.CONTRIBUTORS:
             membership.account.contributors.add(user)
-        elif request.data['permission_level'] == 'admin_users':
+        elif request.data['permission_level'] == PermissionLevels.ADMIN:
             membership.account.admin_users.add(user)
         else:
             return Response({

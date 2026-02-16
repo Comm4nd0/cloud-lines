@@ -12,6 +12,7 @@ from breeder.models import Breeder
 from breed.models import Breed
 from yaml import safe_load
 from json import loads
+from cloudlines.constants import States
 
 
 @login_required(login_url="/account/login")
@@ -83,7 +84,7 @@ def approve(request, id):
         raise PermissionDenied()
     
     for obj in serializers.deserialize("yaml", approval.data):
-        obj.object.state = 'approved'
+        obj.object.state = States.APPROVED
         obj.object.save()
 
     if approval.pedigree:
@@ -100,7 +101,7 @@ def approve(request, id):
         # approve images
         images = PedigreeImage.objects.filter(reg_no=approval.pedigree)
         for image in images:
-            image.state = 'approved'
+            image.state = States.APPROVED
             image.save()
 
     elif approval.breed_group:
@@ -139,7 +140,7 @@ def declined(request):
                 approval.pedigree.delete()
             else:
                 # mark edited items as approved but do not save yaml data from approval object
-                Pedigree.objects.filter(id=approval.pedigree.id).update(state='approved')
+                Pedigree.objects.filter(id=approval.pedigree.id).update(state=States.APPROVED)
 
             # un-approve images
             images = PedigreeImage.objects.filter(reg_no=approval.pedigree)
@@ -153,7 +154,7 @@ def declined(request):
                 approval.breed_group.delete()
             else:
                 # mark edited items as approved but do not save yaml data from approval object
-                BreedGroup.objects.filter(id=approval.breed_group.id).update(state='approved')
+                BreedGroup.objects.filter(id=approval.breed_group.id).update(state=States.APPROVED)
 
 
         approval.delete()

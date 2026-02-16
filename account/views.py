@@ -27,6 +27,7 @@ from money import Money
 from re import match
 from urllib.parse import urljoin
 from threading import Thread
+from cloudlines.constants import ServiceNames, BoltonTypes, SiteModes, DEFAULT_ANIMAL_TYPE
 import random
 import string
 import stripe
@@ -96,7 +97,7 @@ def site_mode(request):
         else:
             pending_approvals = False
 
-        if attached_service.service.service_name not in ['Organisation', 'Large Society']:
+        if attached_service.service.service_name not in ServiceNames.UNLIMITED_ANIMAL_TIERS:
             if Pedigree.objects.filter(account=attached_service).count() < attached_service.service.number_of_animals:
                 pedigrees = True
             else:
@@ -128,7 +129,7 @@ def site_mode(request):
 
         return {'service': attached_service,
                 'attached_services': attached_services,
-                'birth_notification': attached_service.boltons.filter(bolton="1").exists(),
+                'birth_notification': attached_service.boltons.filter(bolton=BoltonTypes.BIRTH_NOTIFICATION).exists(),
                 'add_pedigree': pedigrees,
                 'admins': admins,
                 'users': users,
@@ -241,9 +242,9 @@ def get_main_account(user):
     except AttachedService.DoesNotExist:
         # update the attached service to what default
         attached_service, created = AttachedService.objects.get_or_create(user=user_detail,
-                                                                          animal_type='Pedigrees',
-                                                                          site_mode='mammal',
-                                                                          service=Service.objects.get(service_name='Free'))
+                                                                          animal_type=DEFAULT_ANIMAL_TYPE,
+                                                                          site_mode=SiteModes.MAMMAL,
+                                                                          service=Service.objects.get(service_name=ServiceNames.FREE))
         attached_service.install_available = False
         attached_service.active = True
         attached_service.save()
@@ -310,7 +311,7 @@ def user_edit(request):
         new_user_detail = UserDetail.objects.create(user=new_user,
                                                     phone='',
                                                     )
-        attached_service = AttachedService.objects.filter(user=new_user_detail).update(animal_type='Pedigrees',
+        attached_service = AttachedService.objects.filter(user=new_user_detail).update(animal_type=DEFAULT_ANIMAL_TYPE,
                                                                                         install_available=False,
                                                                                         active=True)
         new_user_detail.current_service_id = user_detail.current_service_id
@@ -563,9 +564,9 @@ def profile(request):
 
     context = {'public_api_key': stripe_pk, 'user_detail': UserDetail.objects.get(user=request.user)}
 
-    if request.user == main_account.user.user and context['user_detail'].current_service.service.service_name != 'Free':
-        context['services'] = Service.objects.exclude(service_name='Free')
-        if main_account.service.service_name != 'Organisation':
+    if request.user == main_account.user.user and context['user_detail'].current_service.service.service_name != ServiceNames.FREE:
+        context['services'] = Service.objects.exclude(service_name=ServiceNames.FREE)
+        if main_account.service.service_name != ServiceNames.ORGANISATION:
             context['recommended'] = Service.objects.filter(id=main_account.service.id+1)
         else:
             context['recommended'] = None
@@ -651,7 +652,7 @@ def settings(request, msg=''):
 
     # memberships
     # validate active membership bolton exists
-    if attached_service.boltons.filter(bolton='2', active=True).exists():
+    if attached_service.boltons.filter(bolton=BoltonTypes.MEMBERSHIPS, active=True).exists():
         try:
             # get the membership objects
             membership, created = Membership.objects.get_or_create(account=attached_service)
@@ -927,11 +928,11 @@ def register(request):
             # login
             login(request, user)
 
-            UserDetail.objects.filter(user=user).update(current_service=AttachedService.objects.create(animal_type='Pedigrees',
-                                                                                                       site_mode='mammal',
+            UserDetail.objects.filter(user=user).update(current_service=AttachedService.objects.create(animal_type=DEFAULT_ANIMAL_TYPE,
+                                                                                                       site_mode=SiteModes.MAMMAL,
                                                                                                        install_available=False,
                                                                                                        user=user_detail,
-                                                                                                       service=Service.objects.get(service_name='Free'),
+                                                                                                       service=Service.objects.get(service_name=ServiceNames.FREE),
                                                                                                        active=True))
             # login
             login(request, user)

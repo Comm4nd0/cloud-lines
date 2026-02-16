@@ -22,6 +22,7 @@ from breed_group.models import BreedGroup
 from django.db.models import Q
 from urllib.parse import urlparse
 from re import match
+from cloudlines.constants import States, PedigreeStatus, PedigreeSex, ServiceNames
 import requests
 
 
@@ -31,9 +32,9 @@ def dashboard(request):
     if main_account.domain and not match('(.*).cloud-lines.com', request.META['HTTP_HOST']):
         return HttpResponseRedirect(main_account.domain)
 
-    total_pedigrees = Pedigree.objects.filter(account=main_account).exclude(state='unapproved').count()
-    top_pedigrees = Pedigree.objects.filter(account=main_account).order_by('-date_added').exclude(state='unapproved')[:5]
-    breed_groups = BreedGroup.objects.filter(account=main_account).order_by('-date_added').exclude(state='unapproved')[:5]
+    total_pedigrees = Pedigree.objects.filter(account=main_account).exclude(state=States.UNAPPROVED).count()
+    top_pedigrees = Pedigree.objects.filter(account=main_account).order_by('-date_added').exclude(state=States.UNAPPROVED)[:5]
+    breed_groups = BreedGroup.objects.filter(account=main_account).order_by('-date_added').exclude(state=States.UNAPPROVED)[:5]
     latest_breeders = Breeder.objects.filter(account=main_account).order_by('-id')[:5]
 
     if total_pedigrees > 0 \
@@ -50,7 +51,7 @@ def dashboard(request):
             previous_year_count = 0
             for year in [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]:
                 year_count = previous_year_count + Pedigree.objects.filter(account=main_account, 
-                                    date_added__year=current_year-year).exclude(state='unapproved').count()
+                                    date_added__year=current_year-year).exclude(state=States.UNAPPROVED).count()
                 previous_year_count = year_count
                 total_added_chart[date.strftime("%Y")] = {'pedigrees_added': year_count}
                 if year != 0:
@@ -68,7 +69,7 @@ def dashboard(request):
                 registered_chart[date.year] = {}
                 for breed in Breed.objects.filter(account=main_account):
                     registered_chart[date.year][breed.breed_name] = Pedigree.objects.filter(breed=breed, 
-                                                        account=main_account, date_of_registration__year=date.year).exclude(state='unapproved').count()
+                                                        account=main_account, date_of_registration__year=date.year).exclude(state=States.UNAPPROVED).count()
                 
                 if year != 0:
                     date = date.replace(day=1)
@@ -85,8 +86,8 @@ def dashboard(request):
         current_alive_chart = {}
         if 'current_alive' in user_graphs['selected']:
             for breed in Breed.objects.filter(account=main_account):
-                current_alive_chart[breed] = {'male': Pedigree.objects.filter(Q(breed__breed_name=breed, account=main_account) & Q(sex='male') & Q(status='alive')).exclude(state='unapproved').count(),
-                                    'female': Pedigree.objects.filter(Q(breed__breed_name=breed, account=main_account) & Q(sex='female') & Q(status='alive')).exclude(state='unapproved').count()}
+                current_alive_chart[breed] = {'male': Pedigree.objects.filter(Q(breed__breed_name=breed, account=main_account) & Q(sex=PedigreeSex.MALE) & Q(status=PedigreeStatus.ALIVE)).exclude(state=States.UNAPPROVED).count(),
+                                    'female': Pedigree.objects.filter(Q(breed__breed_name=breed, account=main_account) & Q(sex=PedigreeSex.FEMALE) & Q(status=PedigreeStatus.ALIVE)).exclude(state=States.UNAPPROVED).count()}
         # number of pedigrees born graph
         born_chart = {}
         if 'born' in user_graphs['selected']:
@@ -98,7 +99,7 @@ def dashboard(request):
                 born_chart[date.year] = {}
                 for breed in Breed.objects.filter(account=main_account):
                     born_chart[date.year][breed.breed_name] = Pedigree.objects.filter(breed=breed, 
-                                                        account=main_account, dob__year=date.year).exclude(state='unapproved').count()
+                                                        account=main_account, dob__year=date.year).exclude(state=States.UNAPPROVED).count()
                 
                 if year != 0:
                     date = date.replace(day=1)
@@ -467,7 +468,7 @@ def order_subscribe(request):
 
 def order_success(request, attached_service_id):
     stripe.api_key = get_stripe_secret_key(request)
-    large_tier = ['Small Society', 'Large Society', 'Organisation']
+    large_tier = ServiceNames.LARGE_TIERS
     # get the attached service object
     attached_service = AttachedService.objects.get(id=attached_service_id)
 

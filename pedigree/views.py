@@ -25,6 +25,7 @@ from django.db.models import Q
 import json
 from account.currencies import get_countries
 from account.models import StripeAccount
+from cloudlines.constants import States, PedigreeSex, PedigreeStatus
 from account.views import is_editor,\
     get_main_account,\
     has_permission,\
@@ -76,7 +77,7 @@ class PedigreeBase(LoginRequiredMixin, TemplateView):
         context['groups'] = BreedGroup.objects.filter(group_members=context['lvl1'].id)
 
         # get all pedigrees for typeahead fields
-        context['pedigrees'] = Pedigree.objects.filter(account=context['attached_service']).exclude(state='unapproved')
+        context['pedigrees'] = Pedigree.objects.filter(account=context['attached_service']).exclude(state=States.UNAPPROVED)
 
         # update and get custom fields
         try:
@@ -166,7 +167,7 @@ class GenerateCert(View):
     def get(self, request, *args, **kwargs):
         context = {}
         context['attached_service'] = get_main_account(request.user)
-        context['lvl1'] = Pedigree.objects.exclude(state='unapproved').get(account=context['attached_service'], id=self.kwargs['pedigree_id'])
+        context['lvl1'] = Pedigree.objects.exclude(state=States.UNAPPROVED).get(account=context['attached_service'], id=self.kwargs['pedigree_id'])
 
         # get account custom fields
         try:
@@ -227,14 +228,14 @@ def get_parents(child, account):
         if child.parent_father:
             #set father
             try:
-                father = Pedigree.objects.exclude(state='unapproved').get(account=account, reg_no=child.parent_father)
+                father = Pedigree.objects.exclude(state=States.UNAPPROVED).get(account=account, reg_no=child.parent_father)
             except Pedigree.DoesNotExist:
                 pass
         # if child has a mother, it wasn't born from a breed group
         if child.parent_mother:
             # set mother
             try:
-                mother = Pedigree.objects.exclude(state='unapproved').get(account=account, reg_no=child.parent_mother)
+                mother = Pedigree.objects.exclude(state=States.UNAPPROVED).get(account=account, reg_no=child.parent_mother)
             except Pedigree.DoesNotExist:
                 pass
         # if born from a breed group
@@ -248,7 +249,7 @@ def get_parents(child, account):
             if mother:
                 if mother.group_members:
                     for member in mother.group_members.all():
-                        if member.sex == 'male':
+                        if member.sex == PedigreeSex.MALE:
                             father = member
                             break
     # if child is a breed group
@@ -260,7 +261,7 @@ def get_parents(child, account):
         if child.group_members:
             for member in child.group_members.all():
                 # append mother and/or father to list if mothers and/or fathers
-                if member.sex == 'female':
+                if member.sex == PedigreeSex.FEMALE:
                     if member.breed_group not in groups:
                         groups.append(member.breed_group)
                     if member.parent_mother not in mothers:
@@ -279,7 +280,7 @@ def get_parents(child, account):
                 # set male of group as father
                 if mother.group_members:
                     for member in mother.group_members.all():
-                        if member.sex == 'male':
+                        if member.sex == PedigreeSex.MALE:
                             father = member
                             break
                 # set male of group as father
@@ -289,7 +290,7 @@ def get_parents(child, account):
             if mothers[0]:
                 # set mother
                 try:
-                    mother = Pedigree.objects.exclude(state='unapproved').get(account=account, reg_no=mothers[0])
+                    mother = Pedigree.objects.exclude(state=States.UNAPPROVED).get(account=account, reg_no=mothers[0])
                 except Pedigree.DoesNotExist:
                     pass
         # if all fathers are the same
@@ -298,7 +299,7 @@ def get_parents(child, account):
             if fathers[0]:
                 # set father
                 try:
-                    father = Pedigree.objects.exclude(state='unapproved').get(account=account, reg_no=fathers[0])
+                    father = Pedigree.objects.exclude(state=States.UNAPPROVED).get(account=account, reg_no=fathers[0])
                 except Pedigree.DoesNotExist:
                     pass
     return father, mother
@@ -511,7 +512,7 @@ def new_pedigree_form(request):
             if request.user in attached_service.contributors.all():
                 new_pedigree.state = 'unapproved'
                 new_pedigree.save()
-                create_approval(request, new_pedigree, attached_service, state='unapproved', type='new')
+                create_approval(request, new_pedigree, attached_service, state=States.UNAPPROVED, type='new')
 
             else:
                 new_pedigree.save()
@@ -558,9 +559,9 @@ def new_pedigree_form(request):
         parent = Pedigree.objects.filter(account=attached_service, id=request.GET.get('parent'))
         if parent.exists():
             parent = parent.first()
-            if parent.sex == 'female':
+            if parent.sex == PedigreeSex.FEMALE:
                 mother_reg = parent.reg_no
-            elif parent.sex == 'male':
+            elif parent.sex == PedigreeSex.MALE:
                 father_reg = parent.reg_no
 
     # pedigree charging
@@ -607,7 +608,7 @@ def edit_pedigree_form(request, id):
         raise PermissionDenied()
 
     # if state is edited make sure to show edited information
-    if pedigree.state == 'edited':
+    if pedigree.state == States.EDITED:
         approval = Approval.objects.get(pedigree=pedigree)
         for obj in serializers.deserialize("yaml", approval.data):
             obj.object.state = 'edited'
@@ -761,7 +762,7 @@ def edit_pedigree_form(request, id):
 
             if request.user in attached_service.contributors.all():
                 if not Approval.objects.filter(pedigree=pedigree).exists():
-                    create_approval(request, pedigree, attached_service, state='edited', type='edit')
+                    create_approval(request, pedigree, attached_service, state=States.EDITED, type='edit')
             else:
                 # delete any existed approvals
                 approvals = Approval.objects.filter(pedigree=pedigree)
@@ -834,7 +835,7 @@ def image_upload(request, id):
         image = ContentFile(img_io.getvalue(), f"{filename}.jpeg")
 
     if request.user in attached_service.contributors.all():
-        upload = PedigreeImage(account=attached_service, state='unapproved', image=image, reg_no=pedigree)
+        upload = PedigreeImage(account=attached_service, state=States.UNAPPROVED, image=image, reg_no=pedigree)
         upload.save()
     else:
         upload = PedigreeImage(account=attached_service, image=image, reg_no=pedigree)
@@ -874,13 +875,13 @@ def add_existing(request, pedigree_id):
     if child.breed.id != int(request.POST.get('breed')):
         return HttpResponse(json.dumps({'fail': True, 'msg': f'Input child is not a {pedigree.breed.breed_name}!'}))
 
-    if pedigree.sex == 'male':
+    if pedigree.sex == PedigreeSex.MALE:
         child.parent_father = pedigree
-    elif pedigree.sex == 'female':
+    elif pedigree.sex == PedigreeSex.FEMALE:
         child.parent_mother = pedigree
 
     if request.user in attached_service.contributors.all():
-        create_approval(request, child, attached_service, state='edited', type='edit')
+        create_approval(request, child, attached_service, state=States.EDITED, type='edit')
     else:
         child.save()
 
@@ -919,13 +920,13 @@ def add_existing_parent(request, pedigree_id):
     if parent.breed.id != int(request.POST.get('breed')):
         return HttpResponse(json.dumps({'fail': True, 'msg': f'Input parent is not a {pedigree.breed.breed_name}!'}))
 
-    if parent.sex == 'male':
+    if parent.sex == PedigreeSex.MALE:
         pedigree.parent_father = parent
-    elif parent.sex == 'female':
+    elif parent.sex == PedigreeSex.FEMALE:
         pedigree.parent_mother = parent
 
     if request.user in attached_service.contributors.all():
-        create_approval(request, pedigree, attached_service, state='edited', type='edit')
+        create_approval(request, pedigree, attached_service, state=States.EDITED, type='edit')
     else:
         pedigree.save()
 
@@ -944,7 +945,7 @@ def pedigree_checkout(request, id, price):
 
 
 def create_approval(request, pedigree, attached_service, state, type):
-    if state == 'edited':
+    if state == States.EDITED:
         Pedigree.objects.filter(id=pedigree.id).update(state=state)
     elif state == 'unapproved':
         Pedigree.objects.filter(id=pedigree.id).update(state=state)
@@ -996,12 +997,12 @@ def get_pedigree_details(request):
 
     # if the input field is a mother/father field, return fail if the input pedigree is the wrong sex
     if request.GET.get('parent_type'):
-        if (request.GET['parent_type'] == 'father' and pedigree.sex != 'male') or (request.GET['parent_type'] == 'mother' and pedigree.sex != 'female'):
+        if (request.GET['parent_type'] == 'father' and pedigree.sex != PedigreeSex.MALE) or (request.GET['parent_type'] == 'mother' and pedigree.sex != PedigreeSex.FEMALE):
             return HttpResponse(json.dumps({'result': 'fail'}))
 
     # if the input field required pedigree to be alive, return fail if the input pedigree is not alive
     if request.GET.get('status'):
-        if (request.GET['status'] == 'alive' and pedigree.status != 'alive'):
+        if (request.GET['status'] == PedigreeStatus.ALIVE and pedigree.status != PedigreeStatus.ALIVE):
             return HttpResponse(json.dumps({'result': 'fail'}))
 
     # if the input field required the pedigree to be of a certain breed, return fail if the breed is incorrect

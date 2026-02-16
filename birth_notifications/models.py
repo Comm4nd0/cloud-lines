@@ -3,23 +3,19 @@ from django.contrib.auth.models import User
 from pedigree.models import Pedigree
 from breeder.models import Breeder
 from account.models import AttachedService, AttachedBolton, StripeAccount
+from cloudlines.constants import BnChildStatus, PedigreeSex
 
 
 class BnChild(models.Model):
     tag_no = models.CharField(max_length=100, blank=True, verbose_name='Tag Number', help_text="Must be unique")
-    # colour = models.CharField(max_length=100, blank=True, verbose_name='Colour', help_text="")
-    STATUSES = (
-        ('deceased', 'Deceased'),
-        ('alive', 'Alive'),
-        ('died_pre_reg', 'Died Pre Reg'),
-    )
+    STATUSES = BnChildStatus.CHOICES
 
     status = models.CharField(max_length=12, choices=STATUSES, null=True, default='unknown',
                               help_text="Accepted formats: dead, alive, unknown", verbose_name="Status")
 
     GENDERS = (
-        ('male', 'Male'),
-        ('female', 'Female'),
+        (PedigreeSex.MALE, 'Male'),
+        (PedigreeSex.FEMALE, 'Female'),
     )
 
     sex = models.CharField(max_length=10, choices=GENDERS, null=True, default='unknown',

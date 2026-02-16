@@ -2,6 +2,7 @@ from django import template
 from django.template import Variable, VariableDoesNotExist
 
 from datetime import datetime
+from cloudlines.constants import BnChildStatus
 
 register = template.Library()
 
@@ -69,7 +70,7 @@ def percent(value):
 def get_living_births(value):
     count = 0
     for birth in value.births.all():
-        if birth.status == 'alive':
+        if birth.status == BnChildStatus.ALIVE:
             count += 1
     return count
 
@@ -78,6 +79,6 @@ def get_living_births(value):
 def get_deceased_births(value):
     count = 0
     for birth in value.births.all():
-        if birth.status != 'alive':
+        if birth.status != BnChildStatus.ALIVE:
             count += 1
     return count

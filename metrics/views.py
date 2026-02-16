@@ -22,6 +22,7 @@ from itertools import chain
 
 from account.views import has_permission, redirect_2_login
 from django.contrib.auth.decorators import login_required
+from cloudlines.constants import ServiceNames, PedigreeStatus, PedigreeSex, States
 
 
 logger = logging.getLogger(__name__)
@@ -110,7 +111,7 @@ def data_validation(request):
                                                                          'breed__breed_name',
                                                                          'status')
     # create unique paths
-    if attached_service.service.service_name in ('Small Society', 'Large Society', 'Organisation'):
+    if attached_service.service.service_name in ServiceNames.LARGE_TIERS:
         host = attached_service.domain.partition('://')[2]
         subdomain = host.partition('.')[0]
         local_output = f"/tmp/dv_{subdomain}_output.json"
@@ -178,7 +179,7 @@ def coi(request):
                                                                          'status')
 
     # create unique paths
-    if attached_service.service.service_name in ('Small Society', 'Large Society', 'Organisation'):
+    if attached_service.service.service_name in ServiceNames.LARGE_TIERS:
         host = attached_service.domain.partition('://')[2]
         subdomain = host.partition('.')[0]
         local_output = f"/tmp/coi_{subdomain}_output.json"
@@ -240,7 +241,7 @@ def kinship(request):
         return HttpResponse(dumps(response))
     
     # check mother is a living female
-    if mother.sex.lower() != 'female' or mother.status.lower() != 'alive':
+    if mother.sex.lower() != PedigreeSex.FEMALE or mother.status.lower() != PedigreeStatus.ALIVE:
         response = {'status': 'error',
                     'msg': f"Mother ({request.POST['mother']}) is not a living female!"
                     }
@@ -256,7 +257,7 @@ def kinship(request):
         return HttpResponse(dumps(response))
 
     # check that father is a living male
-    if father.sex.lower() != 'male' or father.status.lower() != 'alive':
+    if father.sex.lower() != PedigreeSex.MALE or father.status.lower() != PedigreeStatus.ALIVE:
         response = {'status': 'error',
                     'msg': f"Father ({request.POST['father']}) is not a living male!"
                     }
@@ -288,7 +289,7 @@ def kinship(request):
                     }
         return HttpResponse(dumps(response))
 
-    if attached_service.service.service_name in ('Small Society', 'Large Society', 'Organisation'):
+    if attached_service.service.service_name in ServiceNames.LARGE_TIERS:
         host = attached_service.domain.partition('://')[2]
         subdomain = host.partition('.')[0]
         local_output = f"/tmp/k_{subdomain}-{epoch}_output.json"
@@ -378,7 +379,7 @@ def run_mean_kinship(request):
 def mean_kinship(request):
     attached_service = get_main_account(request.user)
     
-    pedigrees = Pedigree.objects.filter(account=attached_service, breed=request.POST['breed'], status='alive').values('id',
+    pedigrees = Pedigree.objects.filter(account=attached_service, breed=request.POST['breed'], status=PedigreeStatus.ALIVE).values('id',
                                                                                         'parent_father__id',
                                                                                         'parent_mother__id',
                                                                                         'sex',
@@ -386,7 +387,7 @@ def mean_kinship(request):
                                                                                         'status')
     if len(pedigrees) > 1:
         # create unique paths
-        if attached_service.service.service_name in ('Small Society', 'Large Society', 'Organisation'):
+        if attached_service.service.service_name in ServiceNames.LARGE_TIERS:
             host = attached_service.domain.partition('://')[2]
             subdomain = host.partition('.')[0]
             local_output = f"/tmp/mk_{subdomain}_output.json"
@@ -419,11 +420,11 @@ def mean_kinship(request):
 
 def stud_advisor_pedigree_details(request, pedigree):
     attached_service = get_main_account(request.user)
-    cois = Pedigree.objects.filter(account=attached_service, breed=pedigree.breed, status='alive').values('coi')
+    cois = Pedigree.objects.filter(account=attached_service, breed=pedigree.breed, status=PedigreeStatus.ALIVE).values('coi')
     total = 0
     for coi in cois.all():
         total += coi['coi']
-    breed_mean_coi = total / Pedigree.objects.filter(account=attached_service, breed=pedigree.breed, status__icontains='alive').count()
+    breed_mean_coi = total / Pedigree.objects.filter(account=attached_service, breed=pedigree.breed, status__icontains=PedigreeStatus.ALIVE).count()
 
     pedigree_details = {'reg_no': pedigree.reg_no,
                       'name': pedigree.name,
@@ -474,7 +475,7 @@ def stud_advisor(request):
         raise PermissionDenied()
 
     # check that pedigree is a living female
-    # if pedigree.sex.lower() != 'female' or pedigree.status.lower() != 'alive':
+    # if pedigree.sex.lower() != PedigreeSex.FEMALE or pedigree.status.lower() != PedigreeStatus.ALIVE:
     #     response = {
     #         'status': 'fail',
     #         'msg': f"pedigree ({reg_no}) is not a living female!",
@@ -504,7 +505,7 @@ def stud_advisor(request):
                                                                    'breed__breed_name',
                                                                    'status')
 
-    if attached_service.service.service_name in ('Small Society', 'Large Society', 'Organisation'):
+    if attached_service.service.service_name in ServiceNames.LARGE_TIERS:
         host = attached_service.domain.partition('://')[2]
         subdomain = host.partition('.')[0]
         local_output = f"/tmp/sa_{subdomain}-{epoch}_output.json"
@@ -653,12 +654,12 @@ def poprep_export(request):
 
     writer = csv.writer(response, delimiter="|")
 
-    for pedigree in Pedigree.objects.filter(account=attached_service, breed=breed).exclude(Q(state='unapproved') | Q(status='unknown') | Q(sex='unknown') | Q(sex='castrated')).values('reg_no', 'parent_father__reg_no', 'parent_mother__reg_no', 'dob', 'sex'):
-        if pedigree['sex'] == "male":
+    for pedigree in Pedigree.objects.filter(account=attached_service, breed=breed).exclude(Q(state=States.UNAPPROVED) | Q(status=PedigreeStatus.UNKNOWN) | Q(sex=PedigreeSex.UNKNOWN) | Q(sex=PedigreeSex.CASTRATED)).values('reg_no', 'parent_father__reg_no', 'parent_mother__reg_no', 'dob', 'sex'):
+        if pedigree['sex'] == PedigreeSex.MALE:
             sex = "M"
-        elif pedigree['sex'] == "female":
+        elif pedigree['sex'] == PedigreeSex.FEMALE:
             sex = "F"
-        elif pedigree['sex'] == "castrated":
+        elif pedigree['sex'] == PedigreeSex.CASTRATED:
             sex = "M"
         else:
             sex = ""

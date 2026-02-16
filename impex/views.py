@@ -15,6 +15,7 @@ from time import time
 import urllib.parse
 import re
 import requests
+from cloudlines.constants import ServiceNames, PedigreeSex, PedigreeStatus
 
 
 @login_required(login_url="/account/login")
@@ -40,7 +41,7 @@ def export(request):
 
         ## get pedigrees
         file_name = f"export-{attached_service.animal_type}-{time()}-acc-{attached_service.id}"
-        if attached_service.service.service_name in ('Small Society', 'Large Society', 'Organisation'):
+        if attached_service.service.service_name in ServiceNames.LARGE_TIERS:
             domain = attached_service.domain
         else:
             domain = "https://cloud-lines.com"
@@ -186,7 +187,7 @@ def import_data(request):
     has_breeds = Breed.objects.filter(account=attached_service).count() > 0
 
     # breed is required if org account with multiple breeds
-    if attached_service.service.service_name == 'Organisation' and Breed.objects.filter(account=attached_service).count() > 1:
+    if attached_service.service.service_name == ServiceNames.ORGANISATION and Breed.objects.filter(account=attached_service).count() > 1:
         breed_required = 'yes'
     else:
         breed_required = 'no'
@@ -735,14 +736,14 @@ def import_pedigree_data(request):
                 # if sex given
                 if row[sex] != '':
                     # if it's valid, save it
-                    if row[sex].lower() in ('male', 'female', 'castrated', 'unknown'):
+                    if row[sex].lower() in (PedigreeSex.MALE, PedigreeSex.FEMALE, PedigreeSex.CASTRATED, PedigreeSex.UNKNOWN):
                         pedigree.sex = row[sex].lower()
                     # check if sex is one of the other valid options
                     elif row[sex].lower() in ('m', 'f'):
                         if row[sex].lower() == 'm':
-                            pedigree.sex = 'male'
+                            pedigree.sex = PedigreeSex.MALE
                         else:
-                            pedigree.sex = 'female'
+                            pedigree.sex = PedigreeSex.FEMALE
                     # invalid, so add error
                     else:
                         errors = loads(database_upload.errors)
@@ -828,7 +829,7 @@ def import_pedigree_data(request):
                 # if status given
                 if row[status] != '':
                     # if it's valid, save it
-                    if row[status].lower() in ('dead', 'alive', 'unknown'):
+                    if row[status].lower() in (PedigreeStatus.DEAD, PedigreeStatus.ALIVE, PedigreeStatus.UNKNOWN):
                         pedigree.status = row[status].lower()
                     # invalid, so add error
                     else:
@@ -951,7 +952,7 @@ def import_pedigree_data(request):
 
             #################### breed
             # not organisation
-            if attached_service.service.service_name != 'Organisation':
+            if attached_service.service.service_name != ServiceNames.ORGANISATION:
                 breed_obj = Breed.objects.filter(account=attached_service).first()
                 # error if given breed doesn't match account breed, if given
                 if breed != '':
