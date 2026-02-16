@@ -9,7 +9,7 @@
     <!-- ============================================================== -->
     <div class="row page-titles">
         <div class="col-md-6 col-8 justify-content-center">
-            <h3 class="text-themecolor m-b-0 m-t-0">Approvals</h3>
+            <h3 class="text-themecolor mb-0 mt-0">Approvals</h3>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
                 <li class="breadcrumb-item active">Approvals</li>
@@ -25,7 +25,7 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                        <button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true">×</button>
                         <h4 class="modal-title">Decline Message</h4>
                     </div>
                     <div class="modal-body">
@@ -39,7 +39,7 @@
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-default waves-effect" data-bs-dismiss="modal">Close</button>
                         <button id="declineFormSubmit" type="button" class="btn btn-danger waves-effect waves-light">Confirm decline</button>
                     </div>
                 </div>
@@ -125,13 +125,13 @@
 
                                 <td>
                                     {% if editor or approval.pedigree.breed.breed_name in breeds_editable or approval.breed_group.breed.breed_name in breeds_editable %}
-                                        <a href="{% url 'approve' approval.id %}"><button class="btn btn-sm btn-success mr-1">Approve</button></a>
+                                        <a href="{% url 'approve' approval.id %}"><button class="btn btn-sm btn-success me-1">Approve</button></a>
                                         {% if approval.pedigree %}
-                                            <a href="{% url 'edit_pedigree_form' approval.pedigree.id %}"><button class="btn btn-sm btn-outline-info mr-1">Edit</button></a>
+                                            <a href="{% url 'edit_pedigree_form' approval.pedigree.id %}"><button class="btn btn-sm btn-outline-info me-1">Edit</button></a>
                                         {% elif approval.breed_group %}
-                                            <a href="{% url 'edit_breed_group_form' approval.breed_group.id %}"><button class="btn btn-sm btn-outline-info mr-1">Edit</button></a>
+                                            <a href="{% url 'edit_breed_group_form' approval.breed_group.id %}"><button class="btn btn-sm btn-outline-info me-1">Edit</button></a>
                                         {% endif %}
-                                        <button id="{{ approval.id }}-decline" class="btn btn-sm btn-danger" data-internalid="{{ approval.id }}" data-toggle="modal" data-target="#decline-modal">Decline</button>
+                                        <button id="{{ approval.id }}-decline" class="btn btn-sm btn-danger" data-internalid="{{ approval.id }}" data-bs-toggle="modal" data-bs-target="#decline-modal">Decline</button>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -272,7 +272,7 @@
                                                         </tbody>
                                                     </table>
                                                     <hr>
-                                                    <div class="card-columns el-element-overlay">
+                                                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3 el-element-overlay">
                                                         {% for image in new_item.images.all %}
                                                             <div class="card">
                                                                 <div class="el-card-item">
@@ -458,7 +458,7 @@
                                                         </tbody>
                                                     </table>
                                                     <hr>
-                                                    <div class="card-columns el-element-overlay">
+                                                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3 el-element-overlay">
                                                         {% for image in item.images.all %}
                                                             {% if image.state != 'approved' %}
                                                                 <div class="card">

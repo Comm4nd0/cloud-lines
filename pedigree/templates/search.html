@@ -20,7 +20,7 @@
     <!-- ============================================================== -->
     <div class="row page-titles">
         <div class="col-md-6 col-8 justify-content-start">
-            <h3 class="text-themecolor m-b-0 m-t-0">{% if service.site_mode == 'mammal' %}Pedigree {% else %}Poultry {% endif %} Search</h3>
+            <h3 class="text-themecolor mb-0 mt-0">{% if service.site_mode == 'mammal' %}Pedigree {% else %}Poultry {% endif %} Search</h3>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'pedigree_search' %}">{{ service.animal_type|title }}</a></li>
@@ -31,16 +31,16 @@
         <div class="col-md-6 col-4">
             {% if add_pedigree %}
                 {% if editor or contributor or breeds_editable|length > 0 %}
-                    <a href="{% url 'new_pedigree_form' %}" class="btn btn-success hidden-sm-down my-1 float-end"><i class="fad fa-plus-square"></i> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
+                    <a href="{% url 'new_pedigree_form' %}" class="btn btn-success my-1 float-end"><i class="fad fa-plus-square"></i> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
                     </a>
                 {% else %}
                     {% include 'login_modal.html' %}
                     <!-- /.modal -->
-                    <button class="btn btn-success hidden-sm-down my-1 float-end" data-toggle="modal" data-target="#login"><i class="fad fa-plus-square"></i> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}</button>
+                    <button class="btn btn-success my-1 float-end" data-bs-toggle="modal" data-bs-target="#login"><i class="fad fa-plus-square"></i> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}</button>
                 {% endif %}
             {% else %}
                 {% include 'upgrade_modal.html' with type='pedigrees' %}
-                <button class="btn btn-success hidden-sm-down my-1 float-end" data-toggle="modal" data-target="#upgrade"><i class="fad fa-plus-square"></i> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}</button>
+                <button class="btn btn-success my-1 float-end" data-bs-toggle="modal" data-bs-target="#upgrade"><i class="fad fa-plus-square"></i> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}</button>
             {% endif %}
             {% if editor and service.pedigree_charging %}
                 {% if local_stripe_account.stripe_acct_id %}

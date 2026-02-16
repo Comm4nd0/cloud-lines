@@ -31,7 +31,7 @@
     <!-- ============================================================== -->
     <div class="row page-titles">
         <div class="col-md-6 col-8 justify-content-center">
-            <h3 class="text-themecolor m-b-0 m-t-0">New {% if service.site_mode == 'mammal' %}Pedigree {% else %}Bird {% endif %} Form</h3>
+            <h3 class="text-themecolor mb-0 mt-0">New {% if service.site_mode == 'mammal' %}Pedigree {% else %}Bird {% endif %} Form</h3>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'pedigree_search' %}">{% if service.site_mode == 'mammal' %}Pedigree {% else %}Poultry {% endif %} search</a></li>
@@ -47,14 +47,14 @@
          <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true">×</button>
                     <h4 class="modal-title"></h4>
                 </div>
                 <div class="modal-body">
                     <p>Are you sure you want to save this pedigree?</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-default waves-effect" data-bs-dismiss="modal">Close</button>
                     <button id="confirmSaveBtn" type="button" class="btn btn-success waves-effect waves-light">Save Pedigree</button>
                 </div>
                 <script>
@@ -70,7 +70,7 @@
          <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true">×</button>
                     <h4 class="modal-title"></h4>
                 </div>
                 <div class="modal-body">
@@ -79,7 +79,7 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-default waves-effect" data-bs-dismiss="modal">Close</button>
                     <button id="saveBreeder" type="button" class="btn btn-success waves-effect waves-light">Save breeder</button>
                 </div>
                 <script>
@@ -145,7 +145,7 @@
          <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true">×</button>
                     <h4 class="modal-title"></h4>
                 </div>
                 <div class="modal-body">
@@ -156,7 +156,7 @@
                     <iframe width="0" height="0" border="0" name="dummyframe" id="dummyframe"></iframe>
                 </div>
                 <div class="modal-footer">
-                    <button id="closeBreed" type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                    <button id="closeBreed" type="button" class="btn btn-default waves-effect" data-bs-dismiss="modal">Close</button>
                     <button id="saveBreed" type="button" class="btn btn-success waves-effect waves-light">Save breed</button>
                 </div>
                 <script>
@@ -191,7 +191,7 @@
                         <div class="col-md-6">
                             <div class="row container">
                                 <div class="col-md-offset-3 col-md-9 button-wrapper">
-                                    <button id="submitPedigree" data-toggle="modal" data-target=".confirmForm" class="btn btn-success">{% if contributor %}Submit for approval{% else %}Submit{% endif %}</button>
+                                    <button id="submitPedigree" data-bs-toggle="modal" data-bs-target=".confirmForm" class="btn btn-success">{% if contributor %}Submit for approval{% else %}Submit{% endif %}</button>
                                     <a href="{% url 'pedigree_search' %}"><button type="button" class="btn btn-inverse">Cancel</button></a>
                                 </div>
                             </div>

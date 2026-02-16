@@ -24,7 +24,7 @@ vertical-align: middle;
     <!-- ============================================================== -->
     <div class="row page-titles">
         <div class="col-md-6 col-8 justify-content-center">
-            <h3 class="text-themecolor m-b-0 m-t-0">{% if service.site_mode == 'mammal' %}Pedigree {% else %}Bird {% endif %} Details</h3>
+            <h3 class="text-themecolor mb-0 mt-0">{% if service.site_mode == 'mammal' %}Pedigree {% else %}Bird {% endif %} Details</h3>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'pedigree_search' %}">{% if service.site_mode == 'mammal' %}Pedigree {% else %}Poultry {% endif %} search</a></li>
@@ -34,21 +34,21 @@ vertical-align: middle;
         <div class="col-md-6 col-4 justify-content-center">
             {% if editor or contributor and breeder or breeds_editable|length > 0 %}
                 {% if lvl1.state == 'approved' and contributor and lvl1.current_owner.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
-                    <a href="{% url 'edit_pedigree_form' lvl1.id %}" id="editPedigree" class="btn float-end hidden-sm-down btn-info mx-1"><i class="fad fa-pencil-alt"></i> Edit {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
+                    <a href="{% url 'edit_pedigree_form' lvl1.id %}" id="editPedigree" class="btn float-end btn-info mx-1"><i class="fad fa-pencil-alt"></i> Edit {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
                     </a>
                 {% endif %}
                 {% if add_pedigree %}
-                    <a href="{% url 'new_pedigree_form' %}" class="btn float-end hidden-sm-down btn-success"><i class="fad fa-plus-square"></i> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
+                    <a href="{% url 'new_pedigree_form' %}" class="btn float-end btn-success"><i class="fad fa-plus-square"></i> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
                     </a>
                 {% else %}
                     {% include 'upgrade_modal.html' with type='pedigrees' %}
-                    <button class="btn float-end hidden-sm-down btn-success" data-toggle="modal" data-target="#upgrade"><i class="fad fa-plus-square"></i> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}</button>
+                    <button class="btn float-end btn-success" data-bs-toggle="modal" data-bs-target="#upgrade"><i class="fad fa-plus-square"></i> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}</button>
                 {% endif %}
             {% else %}
                 {% include 'login_modal.html' %}
                 <!-- /.modal -->
-                <button class="btn float-end hidden-sm-down btn-info mx-1" data-toggle="modal" data-target="#login"><i class="fad fa-pencil-alt"></i> Edit {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}</button>
-                <button class="btn float-end hidden-sm-down btn-success" data-toggle="modal" data-target="#login"><i class="fad fa-plus-square"></i> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}</button>
+                <button class="btn float-end btn-info mx-1" data-bs-toggle="modal" data-bs-target="#login"><i class="fad fa-pencil-alt"></i> Edit {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}</button>
+                <button class="btn float-end btn-success" data-bs-toggle="modal" data-bs-target="#login"><i class="fad fa-plus-square"></i> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}</button>
             {% endif %}
 
         </div>
@@ -56,19 +56,19 @@ vertical-align: middle;
     <!-- ============================================================== -->
 
 <div class="row">
-    <div class="col-md-8 col-lg-8 col-xlg-8">
+    <div class="col-md-8 col-lg-8 col-xl-8">
         {% if lvl1.state == 'edited' %}
             <div class="alert alert-warning alert-rounded"> <i class="ti-alert"></i> This {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %} has an edit pending approval. <a href="{% url 'approvals' %}">View approvals</a>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">&times;</span> </button>
+                <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close"> <span aria-hidden="true">&times;</span> </button>
             </div>
         {% elif lvl1.state == 'unapproved' %}
             <div class="alert alert-danger alert-rounded"> <i class="ti-alert"></i> This {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %} has been submitted for approval. <a href="{% url 'approvals' %}">View approvals</a>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">&times;</span> </button>
+                <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close"> <span aria-hidden="true">&times;</span> </button>
             </div>
         {% endif %}
         {% if payment_session.payment_status == 'unpaid' %}
         <div class="alert alert-danger alert-rounded"> <i class="ti-alert"></i> Payment not complete for this {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}. <a href="{{ payment_session.url }}">Pay Now</a>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">&times;</span> </button>
+                <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close"> <span aria-hidden="true">&times;</span> </button>
             </div>
         {% endif %}
         <div class="card">
@@ -77,10 +77,10 @@ vertical-align: middle;
 
                 <!-- Nav tabs -->
                 <ul class="nav nav-tabs customtab" role="tablist">
-                    <li class="nav-item"> <a class="nav-link active" data-toggle="tab" href="#profile" role="tab"><span class="hidden-sm-up"><i class="ti-info"></i></span> <span class="hidden-xs-down">Profile</span></a> </li>
-                    <li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#images" role="tab"><span class="hidden-sm-up"><i class="ti-image"></i></span> <span class="hidden-xs-down">Images</span></a> </li>
-                    <li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#children" role="tab"><span class="hidden-sm-up"><i class="mdi mdi-human-child"></i></span> <span class="hidden-xs-down">Offspring</span></a> </li>
-                    <li class="nav-item"> <a class="nav-link" data-toggle="tab" href="#cert" role="tab"><span class="hidden-sm-up"><i class="mdi mdi-human-child"></i></span> <span class="hidden-xs-down">Certificate</span></a> </li>
+                    <li class="nav-item"> <a class="nav-link active" data-bs-toggle="tab" href="#profile" role="tab"><span class="d-sm-none"><i class="ti-info"></i></span> <span class="d-none d-sm-inline">Profile</span></a> </li>
+                    <li class="nav-item"> <a class="nav-link" data-bs-toggle="tab" href="#images" role="tab"><span class="d-sm-none"><i class="ti-image"></i></span> <span class="d-none d-sm-inline">Images</span></a> </li>
+                    <li class="nav-item"> <a class="nav-link" data-bs-toggle="tab" href="#children" role="tab"><span class="d-sm-none"><i class="mdi mdi-human-child"></i></span> <span class="d-none d-sm-inline">Offspring</span></a> </li>
+                    <li class="nav-item"> <a class="nav-link" data-bs-toggle="tab" href="#cert" role="tab"><span class="d-sm-none"><i class="mdi mdi-human-child"></i></span> <span class="d-none d-sm-inline">Certificate</span></a> </li>
                 </ul>
                 <!-- Tab panes -->
                 <div class="tab-content">
@@ -94,7 +94,7 @@ vertical-align: middle;
                                                                             {{ image.image.url }}
                                                                         {% endif %}
                                                                     {% endfor %}"
-                                                               class="img-responsive thumbnail mr-3">
+                                                               class="img-fluid thumbnail me-3">
                                     {% endif %}
                                 </div>
                                 <div class="col-md-8">
@@ -141,7 +141,7 @@ vertical-align: middle;
                     </div>
 
                     <div class="tab-pane p-3" id="images" role="tabpanel">
-                        <div class="card-columns el-element-overlay">
+                        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3 el-element-overlay">
                             {% for image in lvl1.images.all %}
                                 <div class="card">
                                     <div class="el-card-item">
@@ -188,7 +188,7 @@ vertical-align: middle;
                     <div class="tab-pane p-3" id="children" role="tabpanel">
                         {% if children %}
                             {% for child in children.all %}
-                                <div class="card" style="width: 20rem;">
+                                <div class="card" class="mb-3">
                                   <img class="card-img-top" src="{% for image in child.images.all %}
                                                                     {% if forloop.first %}
                                                                         {{ image.image.url }}
@@ -211,8 +211,8 @@ vertical-align: middle;
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h4 class="modal-title float-left">Choose existing {% if service.site_mode == 'mammal' %}Pedigree {% else %}Bird{% endif %} (Offspring)</h4>
-                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                        <h4 class="modal-title float-start">Choose existing {% if service.site_mode == 'mammal' %}Pedigree {% else %}Bird{% endif %} (Offspring)</h4>
+                                        <button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true">×</button>
                                     </div>
                                     <div class="modal-body">
                                         <form id="addChildForm" class="form-horizontal" enctype="multipart/form-data">
@@ -267,12 +267,12 @@ vertical-align: middle;
                         </script>
                         {% if editor or contributor and lvl1.current_owner.user == request.user or lvl1.breed.breed_name in breeds_editable %}
                             {% include 'add_new_pedigree.html' with parent=lvl1.id %}
-                            <button type="button" class="btn btn-sm btn-outline-info" data-toggle="modal" data-target="#existing">Add existing</button>
+                            <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#existing">Add existing</button>
                         {% else %}
-                            <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-toggle="modal" data-target="#login">
+                            <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#login">
                                 <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-info" data-toggle="modal" data-target="#login">Add existing</button>
+                            <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#login">Add existing</button>
                         {% endif %}
                     </div>
 
@@ -283,8 +283,8 @@ vertical-align: middle;
                                 <div class="modal-dialog">
                                     <div class="modal-content">
                                         <div class="modal-header">
-                                            <h4 class="modal-title float-left">Choose existing {% if service.site_mode == 'mammal' %}Pedigree {% else %}Bird{% endif %} ({{ service.mother_title }})</h4>
-                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                            <h4 class="modal-title float-start">Choose existing {% if service.site_mode == 'mammal' %}Pedigree {% else %}Bird{% endif %} ({{ service.mother_title }})</h4>
+                                            <button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true">×</button>
                                         </div>
                                         <div class="modal-body">
                                             <form id="addMotherForm" class="form-horizontal" enctype="multipart/form-data">
@@ -344,8 +344,8 @@ vertical-align: middle;
                                 <div class="modal-dialog">
                                     <div class="modal-content">
                                         <div class="modal-header">
-                                            <h4 class="modal-title float-left">Choose existing {% if service.site_mode == 'mammal' %}Pedigree {% else %}Bird{% endif %} ({{ service.father_title }})</h4>
-                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                            <h4 class="modal-title float-start">Choose existing {% if service.site_mode == 'mammal' %}Pedigree {% else %}Bird{% endif %} ({{ service.father_title }})</h4>
+                                            <button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true">×</button>
                                         </div>
                                         <div class="modal-body">
                                             <form id="addFatherForm" class="form-horizontal" enctype="multipart/form-data">
@@ -418,9 +418,9 @@ vertical-align: middle;
                                             {% else %}
                                                 {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
                                                     {% include 'add_new_pedigree.html' with pedigree=lvl2_1 %}
-                                                    <button type="button" class="btn btn-sm btn-outline-info" data-toggle="modal" data-target="#addExistingParentFather">Add existing</button>
+                                                    <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#addExistingParentFather">Add existing</button>
                                                 {% else %}
-                                                    <button type="button" class="btn btn-sm btn-outline-info" data-toggle="modal" data-target="#login">Add existing</button>
+                                                    <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#login">Add existing</button>
                                                 {% endif %}
                                             {% endif %}
                                         </td>
@@ -432,7 +432,7 @@ vertical-align: middle;
                                                 {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
                                                     {% include 'add_new_pedigree.html' with pedigree=lvl3_1 %}
                                                 {% else %}
-                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-toggle="modal" data-target="#login">
+                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#login">
                                                         <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
                                                     </button>
                                                 {% endif %}
@@ -446,7 +446,7 @@ vertical-align: middle;
                                                 {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
                                                     {% include 'add_new_pedigree.html' with pedigree=lvl4_1 %}
                                                 {% else %}
-                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-toggle="modal" data-target="#login">
+                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#login">
                                                         <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
                                                     </button>
                                                 {% endif %}
@@ -465,7 +465,7 @@ vertical-align: middle;
                                                 {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
                                                     {% include 'add_new_pedigree.html' with pedigree=lvl4_2 %}
                                                 {% else %}
-                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-toggle="modal" data-target="#login">
+                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#login">
                                                         <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
                                                     </button>
                                                 {% endif %}
@@ -484,7 +484,7 @@ vertical-align: middle;
                                                 {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
                                                     {% include 'add_new_pedigree.html' with pedigree=lvl3_2 %}
                                                 {% else %}
-                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-toggle="modal" data-target="#login">
+                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#login">
                                                         <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
                                                     </button>
                                                 {% endif %}
@@ -499,7 +499,7 @@ vertical-align: middle;
                                                 {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
                                                     {% include 'add_new_pedigree.html' with pedigree=lvl4_3 %}
                                                 {% else %}
-                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-toggle="modal" data-target="#login">
+                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#login">
                                                         <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
                                                     </button>
                                                 {% endif %}
@@ -518,7 +518,7 @@ vertical-align: middle;
                                                 {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
                                                     {% include 'add_new_pedigree.html' with pedigree=lvl4_4 %}
                                                 {% else %}
-                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-toggle="modal" data-target="#login">
+                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#login">
                                                         <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
                                                     </button>
                                                 {% endif %}
@@ -537,9 +537,9 @@ vertical-align: middle;
                                             {% else %}
                                                 {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
                                                     {% include 'add_new_pedigree.html' with pedigree=lvl2_2 %}
-                                                    <button type="button" class="btn btn-sm btn-outline-info" data-toggle="modal" data-target="#addExistingParentMother">Add existing</button>
+                                                    <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#addExistingParentMother">Add existing</button>
                                                 {% else %}
-                                                    <button type="button" class="btn btn-sm btn-outline-info" data-toggle="modal" data-target="#login">Add existing</button>
+                                                    <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#login">Add existing</button>
                                                 {% endif %}
                                             {% endif %}
 
@@ -552,7 +552,7 @@ vertical-align: middle;
                                                 {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
                                                     {% include 'add_new_pedigree.html' with pedigree=lvl3_3 %}
                                                 {% else %}
-                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-toggle="modal" data-target="#login">
+                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#login">
                                                         <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
                                                     </button>
                                                 {% endif %}
@@ -566,7 +566,7 @@ vertical-align: middle;
                                                 {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
                                                     {% include 'add_new_pedigree.html' with pedigree=lvl4_5 %}
                                                 {% else %}
-                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-toggle="modal" data-target="#login">
+                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#login">
                                                         <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
                                                     </button>
                                                 {% endif %}
@@ -585,7 +585,7 @@ vertical-align: middle;
                                                 {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
                                                     {% include 'add_new_pedigree.html' with pedigree=lvl4_6 %}
                                                 {% else %}
-                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-toggle="modal" data-target="#login">
+                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#login">
                                                         <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
                                                     </button>
                                                 {% endif %}
@@ -604,7 +604,7 @@ vertical-align: middle;
                                                 {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
                                                     {% include 'add_new_pedigree.html' with pedigree=lvl3_4 %}
                                                 {% else %}
-                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-toggle="modal" data-target="#login">
+                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#login">
                                                         <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
                                                     </button>
                                                 {% endif %}
@@ -618,7 +618,7 @@ vertical-align: middle;
                                                 {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
                                                     {% include 'add_new_pedigree.html' with pedigree=lvl4_7 %}
                                                 {% else %}
-                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-toggle="modal" data-target="#login">
+                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#login">
                                                         <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
                                                     </button>
                                                 {% endif %}
@@ -637,7 +637,7 @@ vertical-align: middle;
                                                 {% if lvl1.state == 'approved' and contributor and lvl1.breeder.user == request.user or editor or lvl1.breed.breed_name in breeds_editable %}
                                                     {% include 'add_new_pedigree.html' with pedigree=lvl4_8 %}
                                                 {% else %}
-                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-toggle="modal" data-target="#login">
+                                                    <button class="btn btn-sm btn-outline-success waves-effect waves-light" type="button" data-bs-toggle="modal" data-bs-target="#login">
                                                         <span class="btn-label"><i class="fad fa-plus-circle"></i></span> Add {% if service.site_mode == 'mammal' %}Pedigree{% else %}Bird{% endif %}
                                                     </button>
                                                 {% endif %}
@@ -650,8 +650,8 @@ vertical-align: middle;
                         {% if editor or lvl1.breed.breed_name in breeds_editable or lvl1.current_owner.user == request.user or lvl1.breeder.user == request.user %}
                             <div class="row">
                                 <div class="col-12">
-                                    <a href="{% url 'cert' lvl1.id 'zootech' %}"><button class="btn float-end hidden-sm-down btn-outline-info ml-2">ZooTechnical PDF</button></a>
-                                    <a href="{% url 'cert' lvl1.id 'cert' %}"><button class="btn float-end hidden-sm-down btn-outline-info ml-2">Certificate PDF</button></a>
+                                    <a href="{% url 'cert' lvl1.id 'zootech' %}"><button class="btn float-end btn-outline-info ms-2">ZooTechnical PDF</button></a>
+                                    <a href="{% url 'cert' lvl1.id 'cert' %}"><button class="btn float-end btn-outline-info ms-2">Certificate PDF</button></a>
                                 </div>
                             </div>
                         {% endif %}
@@ -660,7 +660,7 @@ vertical-align: middle;
             </div>
         </div>
     </div>
-    <div class="col-md-4 col-lg-4 col-xlg-4">
+    <div class="col-md-4 col-lg-4 col-xl-4">
         <div class="card">
             <div class="card-body">
                 <h4 class="card-title">Details</h4>

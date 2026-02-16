@@ -11,7 +11,7 @@
     <!-- ============================================================== -->
     <div class="row page-titles">
         <div class="col-md-6 col-8 justify-content-center">
-            <h3 class="text-themecolor m-b-0 m-t-0">{{ breed.breed_name }}</h3>
+            <h3 class="text-themecolor mb-0 mt-0">{{ breed.breed_name }}</h3>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'reports' %}">Reports</a></li>
@@ -48,7 +48,7 @@
                                 <small>End date</small>
                             </div>
                         </div>
-                        <span class="text-info mr-1">Export to...</span>
+                        <span class="text-info me-1">Export to...</span>
                         <button type="submit" class="btn btn-info" name="xls_submit" value="xls">XLSX</button>
                         <button type="submit" class="btn btn-info" name="pdf_submit" value="pdf">PDF</button>
                     </form>

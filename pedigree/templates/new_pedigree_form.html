@@ -6,7 +6,7 @@
 <h3 class="box-title">{% if service.site_mode == 'mammal' %}Pedigree {% else %}Bird {% endif %} Info</h3>
 {% if contributor %}
     <div class="alert alert-warning alert-rounded"> <i class="ti-alert"></i> New pedigrees will need to be approved by an editor.
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">&times;</span> </button>
+        <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close"> <span aria-hidden="true">&times;</span> </button>
     </div>
 {% endif %}
 <hr class="mt-0 mb-5">
@@ -72,7 +72,7 @@
                             {% endif %}
                             {% if 'setup' not in request.get_full_path %}
                                 {% if editor or breeds_editable|length > 0 %}
-                                    <button type="button" id="showNewBreederModal" data-toggle="modal" data-target=".bs-example-modal-lg" class="my-1 btn btn-sm btn-outline-success btn-rounded"><i class="fad fa-plus-square"></i> Add New Breeder</button>
+                                    <button type="button" id="showNewBreederModal" data-bs-toggle="modal" data-bs-target=".bs-example-modal-lg" class="my-1 btn btn-sm btn-outline-success btn-rounded"><i class="fad fa-plus-square"></i> Add New Breeder</button>
                                 {% endif %}
                             {% endif %}
                         {% elif field.label == 'Current owner' %}
@@ -86,7 +86,7 @@
                             {% endif %}
                             {% if 'setup' not in request.get_full_path %}
                                 {% if editor %}
-                                    <button type="button" id="showNewBreederModal" data-toggle="modal" data-target=".bs-example-modal-lg" class="my-1 btn btn-sm btn-outline-success btn-rounded"><i class="fad fa-plus-square"></i> Add New Owner</button>
+                                    <button type="button" id="showNewBreederModal" data-bs-toggle="modal" data-bs-target=".bs-example-modal-lg" class="my-1 btn btn-sm btn-outline-success btn-rounded"><i class="fad fa-plus-square"></i> Add New Owner</button>
                                 {% endif %}
                             {% endif %}
                         {% elif field.label == 'Registration Number' %}
@@ -116,14 +116,14 @@
                             <div class="radio radio-info pt-2">
                                 {% for option in field %}
                                     <input type="radio" name="status" class="radio radio-info" id="{{ option.id_for_label }}" value="{{ option.choice_label|lower }}" {% if option.choice_label == 'Alive' %}checked{% endif %}>
-                                    <label for="{{ option.id_for_label }}" class="pr-2"> {{ option.choice_label }}</label>
+                                    <label for="{{ option.id_for_label }}" class="pe-2"> {{ option.choice_label }}</label>
                                 {% endfor %}
                             </div>
                         {% elif field.label == 'Sex' %}
                             <div class="radio radio-info pt-2">
                                 {% for option in field %}
                                     <input type="radio" name="sex" class="radio radio-info" id="{{ option.id_for_label }}" value="{{ option.choice_label|lower }}" {% if option.choice_label == 'Female' %}checked{% endif %}>
-                                    <label for="{{ option.id_for_label }}" class="pr-2"> {{ option.choice_label }}</label>
+                                    <label for="{{ option.id_for_label }}" class="pe-2"> {{ option.choice_label }}</label>
                                 {% endfor %}
                             </div>
                         {% elif field.label == 'Litter size' %}
@@ -144,7 +144,7 @@
                                     <input id="id_breed" class="typeahead form-control" type="text" value="{{ breeds.all.first }}" disabled>
                             {% endif %}
                             {% if 'setup' not in request.get_full_path and editor %}
-                                <button type="button" id="showNewBreedModal" data-toggle="modal" data-target="{% if add_breed %}#newBreedModal{% else %}#upgrade{% endif %}" class="my-1 btn btn-sm btn-outline-success btn-rounded"><i class="fad fa-plus-square"></i> Add New Breed</button>
+                                <button type="button" id="showNewBreedModal" data-bs-toggle="modal" data-bs-target="{% if add_breed %}#newBreedModal{% else %}#upgrade{% endif %}" class="my-1 btn btn-sm btn-outline-success btn-rounded"><i class="fad fa-plus-square"></i> Add New Breed</button>
                             {% endif %}
                         {% elif field.label == 'Sale or hire' %}
                             <div>

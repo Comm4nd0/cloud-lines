@@ -8,7 +8,7 @@
     <!-- ============================================================== -->
     <div class="row page-titles">
         <div class="col-md-6 col-8 justify-content-center">
-            <h3 class="text-themecolor m-b-0 m-t-0">Breed Groups</h3>
+            <h3 class="text-themecolor mb-0 mt-0">Breed Groups</h3>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
                 <li class="breadcrumb-item active">Breed Groups</li>
@@ -17,12 +17,12 @@
         <div class="col-md-6 col-4 justify-content-center">
 
             {% if editor or contributor or breeds_editable|length > 0 %}
-                <a href="{% url 'new_breed_group_form' %}" class="btn float-end hidden-sm-down btn-success"><i class="fad fa-plus-square"></i> Create
+                <a href="{% url 'new_breed_group_form' %}" class="btn float-end btn-success"><i class="fad fa-plus-square"></i> Create
                 </a>
             {% else %}
                 {% include 'login_modal.html' %}
                 <!-- /.modal -->
-                <button class="btn float-end hidden-sm-down btn-success" data-toggle="modal" data-target="#login"><i class="fad fa-plus-square"></i> Create</button>
+                <button class="btn float-end btn-success" data-bs-toggle="modal" data-bs-target="#login"><i class="fad fa-plus-square"></i> Create</button>
             {% endif %}
         </div>
     </div>
@@ -70,7 +70,7 @@
                                                 </a>
                                             {% endif %}
                                         {% else %}
-                                            <button class="btn btn-outline-info" data-toggle="modal" data-target="#login"><i class="fad fa-pencil-alt"></i> Edit</button>
+                                            <button class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#login"><i class="fad fa-pencil-alt"></i> Edit</button>
                                         {% endif %}
                                     </td>
                                 </tr>

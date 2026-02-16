@@ -211,7 +211,7 @@
 	
 								</div>
 							</form>
-							<button type="button" class="btn btn-primary forward-btn float-end" id="selectService" data-target="#ownerSection" data-validation="validateServicesAccordion">Owner</button>
+							<button type="button" class="btn btn-primary forward-btn float-end" id="selectService" data-bs-target="#ownerSection" data-validation="validateServicesAccordion">Owner</button>
 						</div>
 					</div>
 				</div>
@@ -501,8 +501,8 @@
 								</div>
 							</form>
 							<div id='ownerErrors' class="style-msg errormsg"></div>
-							<button type="button" class="btn btn-secondary back-btn" data-target="#serviceSection">Back</button>
-							<button type="button" class="btn btn-primary forward-btn" data-target="#paymentSection" id="submitBtn">Submit</button>
+							<button type="button" class="btn btn-secondary back-btn" data-bs-target="#serviceSection">Back</button>
+							<button type="button" class="btn btn-primary forward-btn" data-bs-target="#paymentSection" id="submitBtn">Submit</button>
 						
 						</div>
 					</div>
@@ -518,7 +518,7 @@
   					clearErrors('#serviceErrors');
 					let errors = false;
 					const REQUIRED_SERVICES = ['20.00', '40.00', '60.00'];
-					let errorsHtml = '<div class="sb-msg"><i class="icon-remove"></i><strong>Oh snap!</strong> Correct the following field(s) and try submitting again:<ul class="ml-4">';
+					let errorsHtml = '<div class="sb-msg"><i class="icon-remove"></i><strong>Oh snap!</strong> Correct the following field(s) and try submitting again:<ul class="ms-4">';
 
 					function checkRequiredField(id, errorMessage) {
 						if ($(id).val() === 'None') {
@@ -565,7 +565,7 @@
 				const validateOwnerAccordion = () => {
   					clearErrors('#ownerErrors');
 					let errors = false;
-					let errorsHtml = '<div class="sb-msg"><i class="icon-remove"></i><strong>Oh snap!</strong> Correct the following field(s) and try submitting again:<ul class="ml-4">';
+					let errorsHtml = '<div class="sb-msg"><i class="icon-remove"></i><strong>Oh snap!</strong> Correct the following field(s) and try submitting again:<ul class="ms-4">';
 
 						function checkRequiredField(id, errorMessage, isNameField = false) {
 							const fieldValue = $(id).val().trim(); // Trim the value

@@ -7,7 +7,7 @@
     <!-- ============================================================== -->
     <div class="row page-titles">
         <div class="col-md-6 col-8 justify-content-center">
-            <h3 class="text-themecolor m-b-0 m-t-0">Dashboard</h3>
+            <h3 class="text-themecolor mb-0 mt-0">Dashboard</h3>
         </div>
     </div>
     <!-- ============================================================== -->
@@ -19,9 +19,9 @@
         <!-- Row -->
         <div class="row">
             <!-- Column -->
-            <div class="col-md-8 col-lg-8 col-xlg-8">
+            <div class="col-md-8 col-lg-8 col-xl-8">
                 <div class="row">
-                    <div class="col-md-6 col-lg-3 col-xlg-3">
+                    <div class="col-md-6 col-lg-3 col-xl-3">
                         <div class="card card-inverse card-info">
                             {% if add_pedigree %}
                                 {% if editor or contributor or breeds_editable|length > 0 %}
@@ -32,7 +32,7 @@
                                         </div>
                                     </a>
                                 {% else %}
-                                    <a href="#" data-toggle="modal" data-target="#login">
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#login">
                                         <div class="box text-center">
                                             <h1 class="font-light text-white"><i class="fad fa-plus"></i> </h1>
                                             <h6 class="text-white">Add New {% if service.site_mode == 'mammal' %}Pedigree {% else %}Bird {% endif %}</h6>
@@ -40,7 +40,7 @@
                                     </a>
                                 {% endif %}
                             {% else %}
-                                <a href="#" data-toggle="modal" data-target="#upgrade">
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#upgrade">
                                     <div class="box text-center">
                                         <h1 class="font-light text-white"><i class="fad fa-plus"></i> </h1>
                                         <h6 class="text-white">Add New {% if service.site_mode == 'mammal' %}Pedigree {% else %}Bird {% endif %}</h6>
@@ -50,7 +50,7 @@
                         </div>
                     </div>
                     <!-- Column -->
-                    <div class="col-md-6 col-lg-3 col-xlg-3">
+                    <div class="col-md-6 col-lg-3 col-xl-3">
                         <div class="card card-inverse card-success">
                             {% if editor or breeds_editable|length > 0 %}
                                 <a href="{% url 'new_breeder_form' %}">
@@ -60,7 +60,7 @@
                                     </div>
                                 </a>
                             {% else %}
-                                <a href="#" data-toggle="modal" data-target="#login">
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#login">
                                     <div class="box text-center">
                                         <h1 class="font-light text-white"><i class="fad fa-user-plus"></i></h1>
                                         <h6 class="text-white">Add New Breeder/Owner</h6>
@@ -70,7 +70,7 @@
                         </div>
                     </div>
                     <!-- Column -->
-                    <div class="col-md-6 col-lg-3 col-xlg-3">
+                    <div class="col-md-6 col-lg-3 col-xl-3">
                         <div class="card card-inverse card-dark">
                             {% if add_breed %}
                                 {% if editor %}
@@ -81,7 +81,7 @@
                                         </div>
                                     </a>
                                 {% else %}
-                                    <a href="#" data-toggle="modal" data-target="#login">
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#login">
                                         <div class="box text-center">
                                             <h1 class="font-light text-white"><i class="fad fa-dna"></i></h1>
                                             <h6 class="text-white">Add New Breed</h6>
@@ -89,7 +89,7 @@
                                     </a>
                                 {% endif %}
                             {% else %}
-                                <a href="#" data-toggle="modal" data-target="#upgrade">
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#upgrade">
                                     <div class="box text-center">
                                         <h1 class="font-light text-white"><i class="fad fa-dna"></i></h1>
                                         <h6 class="text-white">Add New Breed</h6>
@@ -99,7 +99,7 @@
                         </div>
                     </div>
                     <!-- Column -->
-                    <div class="col-md-6 col-lg-3 col-xlg-3">
+                    <div class="col-md-6 col-lg-3 col-xl-3">
                         <div class="card card-inverse card-primary">
                             {% if service.site_mode == 'poultry' %}
                                 {% if editor or contributor %}
@@ -110,7 +110,7 @@
                                         </div>
                                     </a>
                                 {% else %}
-                                    <a href="#" data-toggle="modal" data-target="#login">
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#login">
                                         <div class="box text-center">
                                             <h1 class="font-light text-white"><i class="fad fa-object-ungroup"></i></h1>
                                             <h6 class="text-white">Add New Breed Group</h6>
@@ -162,7 +162,7 @@
                                                     <div id="morris-line-chart"></div>
                                                 {% else %}
                                                     <div class="alert alert-info">
-                                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">×</span> </button>
+                                                        <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close"> <span aria-hidden="true">×</span> </button>
                                                         <h3 class="text-info"><i class="fad fa-exclamation-circle"></i> Information</h3>
                                                         You have not added any {{ service.animal_type|title }} yet to your Cloudlines instance.
                                                         You can <a href="{% url 'new_pedigree_form' %}">click here</a> or click the 'Add New Pedigree' button above to get started.
@@ -208,7 +208,7 @@
                                                         {% for breed, colour in registered_chart.breeds.items %}
                                                             <li class="list-inline-item">
                                                                 <h5>
-                                                                    <i class="fa fa-circle mr-1" style="color: {{ colour }}"></i>
+                                                                    <i class="fa fa-circle me-1" style="color: {{ colour }}"></i>
                                                                     {{ breed }}
                                                                 </h5>
                                                             </li>
@@ -331,7 +331,7 @@
                                                         {% for breed, colour in born_chart.breeds.items %}
                                                             <li class="list-inline-item">
                                                                 <h5>
-                                                                    <i class="fa fa-circle mr-1" style="color: {{ colour }}"></i>
+                                                                    <i class="fa fa-circle me-1" style="color: {{ colour }}"></i>
                                                                     {{ breed }}
                                                                 </h5>
                                                             </li>
@@ -410,7 +410,7 @@
                             <div class="card">
                                 <div class="btn-group btn-block">
                                     <button id="select-graph" type="button" class="btn btn-secondary dropdown-toggle"
-                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         Add Graph
                                     </button>
                                     <div class="dropdown-menu">
@@ -462,7 +462,7 @@
                 </script>
             </div>
 
-            <div class="col-md-4 col-lg-4 col-xlg-4">
+            <div class="col-md-4 col-lg-4 col-xl-4">
                 <!-- Card -->
                 <div class="card">
                     <div class="card-body">

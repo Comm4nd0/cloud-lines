@@ -21,7 +21,7 @@
     <!-- ============================================================== -->
     <div class="row page-titles">
         <div class="col-md-6 col-8 justify-content-center">
-            <h3 class="text-themecolor m-b-0 m-t-0">{% if service.site_mode == 'mammal' %}Pedigree {% else %}Poultry {% endif %} Breeders</h3>
+            <h3 class="text-themecolor mb-0 mt-0">{% if service.site_mode == 'mammal' %}Pedigree {% else %}Poultry {% endif %} Breeders</h3>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'breeders' %}">Breeders</a></li>
@@ -31,20 +31,20 @@
         <div class="col-md-6 col-4 justify-content-center">
 
             {% if editor or breeds_editable|length > 0 or breeder.user == request.user and contributor %}
-                <a href="{% url 'edit_breeder_form' breeder.id %}" id="editBreeder" class="btn float-end hidden-sm-down btn-info mx-1"><i class="fad fa-pencil-alt"></i> Edit
+                <a href="{% url 'edit_breeder_form' breeder.id %}" id="editBreeder" class="btn float-end btn-info mx-1"><i class="fad fa-pencil-alt"></i> Edit
                 </a>
             {% else %}
                 {% include 'login_modal.html' %}
                 <!-- /.modal -->
-                <button class="btn float-end hidden-sm-down btn-info mx-1" data-toggle="modal" data-target="#login"><i class="fad fa-pencil-alt"></i> Edit</button>
+                <button class="btn float-end btn-info mx-1" data-bs-toggle="modal" data-bs-target="#login"><i class="fad fa-pencil-alt"></i> Edit</button>
             {% endif %}
             {% if editor or breeds_editable|length > 0 %}
-                <a href="{% url 'new_breeder_form' %}" class="btn float-end hidden-sm-down btn-success"><i class="fad fa-plus-square"></i> Add Breeder
+                <a href="{% url 'new_breeder_form' %}" class="btn float-end btn-success"><i class="fad fa-plus-square"></i> Add Breeder
                 </a>
             {% else %}
                 {% include 'login_modal.html' %}
                 <!-- /.modal -->
-                <button class="btn float-end hidden-sm-down btn-success" data-toggle="modal" data-target="#login"><i class="fad fa-plus-square"></i> Add Breeder</button>
+                <button class="btn float-end btn-success" data-bs-toggle="modal" data-bs-target="#login"><i class="fad fa-plus-square"></i> Add Breeder</button>
             {% endif %}
         </div>
     </div>

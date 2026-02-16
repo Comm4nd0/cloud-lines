@@ -67,7 +67,7 @@
 <!-- ============================================================== -->
 <div class="row page-titles">
     <div class="col-md-6 col-8 justify-content-center">
-        <h3 class="text-themecolor m-b-0 m-t-0">Edit {% if service.site_mode == 'mammal' %}Pedigree {% else %}Bird {% endif %} Form</h3>
+        <h3 class="text-themecolor mb-0 mt-0">Edit {% if service.site_mode == 'mammal' %}Pedigree {% else %}Bird {% endif %} Form</h3>
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
             <li class="breadcrumb-item"><a href="{% url 'pedigree_search' %}">{% if service.site_mode == 'mammal' %}Pedigree {% else %}Poultry {% endif %} Search</a></li>
@@ -85,14 +85,14 @@
      <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true">×</button>
                 <h4 class="modal-title"></h4>
             </div>
             <div class="modal-body">
                 <p>Are you sure you want to save this pedigree?</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-default waves-effect" data-bs-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-success waves-effect waves-light confirmSaveBtn">Save Pedigree</button>
             </div>
         </div>
@@ -106,7 +106,7 @@
         </div>
         {% if contributor %}
             <div class="alert alert-warning alert-rounded mt-2"> <i class="ti-alert"></i> Edits to this pedigree will need to be approved by an editor.
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">&times;</span> </button>
+                <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close"> <span aria-hidden="true">&times;</span> </button>
             </div>
         {% endif %}
         <div class="card-body">
@@ -228,14 +228,14 @@
                                             <div class="radio radio-info pt-2">
                                                 {% for option in field %}
                                                     <input type="radio" name="status" id="{{ option.id_for_label }}" value="{{ option.choice_label|lower }}" {% if pedigree.status == option.choice_label|lower %}checked{% endif %}>
-                                                        <label for="{{ option.id_for_label }}" class="pr-2"> {{ option.choice_label }} </label>
+                                                        <label for="{{ option.id_for_label }}" class="pe-2"> {{ option.choice_label }} </label>
                                                 {% endfor %}
                                         </div>
                                         {% elif field.label == 'Sex' %}
                                             <div class="radio radio-info pt-2">
                                                 {% for option in field %}
                                                     <input type="radio" name="sex" id="{{ option.id_for_label }}" value="{{ option.choice_label|lower }}" {% if pedigree.sex == option.choice_label|lower %}checked{% endif %}>
-                                                        <label for="{{ option.id_for_label }}" class="pr-2"> {{ option.choice_label }} </label>
+                                                        <label for="{{ option.id_for_label }}" class="pe-2"> {{ option.choice_label }} </label>
                                                 {% endfor %}
                                         </div>
                                         {% elif field.label == 'Litter size' %}
@@ -385,13 +385,13 @@
                             <div class="row">
                                 <div class="col-12">
                                     {% if pedigree.state != 'approved' %}
-                                        <button type="submit" data-toggle="modal" data-target=".confirmForm" class="btn btn-success">Approve</button>
+                                        <button type="submit" data-bs-toggle="modal" data-bs-target=".confirmForm" class="btn btn-success">Approve</button>
                                     {% else %}
-                                        <button type="submit" data-toggle="modal" data-target=".confirmForm" class="btn btn-success">{% if contributor %}Submit for approval{% else %}Save{% endif %}</button>
+                                        <button type="submit" data-bs-toggle="modal" data-bs-target=".confirmForm" class="btn btn-success">{% if contributor %}Submit for approval{% else %}Save{% endif %}</button>
                                     {% endif %}
                                     <a href="{% url 'pedigree' pedigree.id %}"><button type="button" class="btn btn-inverse">Cancel</button></a>
                                     {% if editor %}
-                                        <button type="button" id="deletePedigree" data-toggle="modal" data-target="#delete" class="model_img img-fluid btn btn-danger float-end">Delete Pedigree</button>
+                                        <button type="button" id="deletePedigree" data-bs-toggle="modal" data-bs-target="#delete" class="model_img img-fluid btn btn-danger float-end">Delete Pedigree</button>
                                     {% endif %}
                                 </div>
                             </div>

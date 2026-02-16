@@ -8,7 +8,7 @@
     <!-- ============================================================== -->
     <div class="row page-titles">
         <div class="col-md-6 col-8 justify-content-center">
-            <h3 class="text-themecolor m-b-0 m-t-0">Edit Breed Group Form</h3>
+            <h3 class="text-themecolor mb-0 mt-0">Edit Breed Group Form</h3>
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="{% url 'breed_groups' %}">Breed Groups</a></li>
@@ -27,7 +27,7 @@
             </div>
             {% if contributor %}
                 <div class="alert alert-warning alert-rounded mt-2"> <i class="ti-alert"></i> Edits to this breed group will need to be approved by an editor.
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">&times;</span> </button>
+                    <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close"> <span aria-hidden="true">&times;</span> </button>
                 </div>
             {% endif %}
             <div class="card-body">
@@ -81,13 +81,13 @@
                                             {% elif field.label == 'Group ID' %}
                                                 {% render_field field class="form-control" value=breed_group.group_name %}
                                             {% elif field.label == 'Group members' %}
-                                                <div class="row pr-4">
-                                                    <div class="col-10 pr-0">
+                                                <div class="row pe-4">
+                                                    <div class="col-10 pe-0">
                                                         <div id="pedigrees_all" class="input-group">
                                                             <input id="id_pedigree" type="text" class="typeahead form-control" placeholder="Pedigree">
                                                         </div>
                                                     </div>
-                                                    <div class="col-2 pl-0">
+                                                    <div class="col-2 ps-0">
                                                         <button id="addMemberBtn" class="btn btn-info" type="button">Add</button>
                                                     </div>
                                                 </div>
@@ -127,7 +127,7 @@
                                             {% endif %}
                                             <a href="{% url 'breed_groups' %}"><button type="button" name="submit" class="btn btn-inverse">Cancel</button></a>
                                             {% if editor %}
-                                                <button type="button" data-toggle="modal" data-target="#delete" class="model_img img-fluid btn btn-danger float-end">Delete</button>
+                                                <button type="button" data-bs-toggle="modal" data-bs-target="#delete" class="model_img img-fluid btn btn-danger float-end">Delete</button>
                                             {% endif %}
                                         </div>
                                     </div>
