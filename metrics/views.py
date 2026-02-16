@@ -12,7 +12,7 @@ from json import dumps, loads
 from datetime import datetime, timedelta
 import logging
 import requests
-import pytz
+from zoneinfo import ZoneInfo
 import boto3
 import urllib.parse
 import urllib.request
@@ -33,10 +33,13 @@ def calc_last_run(attached_service, obj, dt=None, timezone="UTC"):
 
     if dt is None:
         dt = datetime.utcnow()
-    timezone = pytz.timezone(timezone)
-    timezone_aware_date = timezone.localize(dt, is_dst=None)
+    tz = ZoneInfo(timezone)
+    timezone_aware_date = dt.replace(tzinfo=tz)
 
-    if timezone_aware_date.tzinfo._dst.seconds != 0:
+    # Check if DST is in effect by comparing UTC offset with standard offset
+    utc_offset = timezone_aware_date.utcoffset()
+    std_offset = tz.utcoffset(datetime(timezone_aware_date.year, 1, 1))
+    if utc_offset != std_offset:
         obj.last_run += timedelta(minutes=attached_service.coi_timeout)
     else:
         obj.last_run += timedelta(minutes=attached_service.coi_timeout * 2)

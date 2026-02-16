@@ -362,7 +362,7 @@ def order(request, service=1):
     if 'upgrade' in request.GET:
         try:
             context['customer'] = stripe.Customer.retrieve(context['user_detail'].stripe_id)
-        except stripe.error.InvalidRequestError:
+        except stripe.InvalidRequestError:
             pass
 
         # get the attached_service to upgrade
@@ -478,7 +478,7 @@ def order_success(request, attached_service_id):
         session = stripe.checkout.Session.retrieve(
             attached_service.stripe_payment_token,
         )
-    except stripe.error.StripeError as e:
+    except stripe.StripeError as e:
         # Handle error
         return JsonResponse({'error': str(e)}, status=400)
 

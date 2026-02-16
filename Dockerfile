@@ -1,10 +1,10 @@
-FROM python:3.8-slim
+FROM python:3.12-slim
 
 # Prevent Python from writing .pyc files and enable unbuffered output
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Install system dependencies for psycopg2, Pillow, pyheif, xhtml2pdf
+# Install system dependencies for psycopg2, Pillow, pillow-heif, xhtml2pdf
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \

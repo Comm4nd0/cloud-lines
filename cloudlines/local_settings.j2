@@ -31,7 +31,14 @@ STATIC_ROOT = STATIC_URL
 AWS_S3_MAX_AGE_SECONDS_STATIC = "94608000"
 
 MEDIAFILES_LOCATION = ''
-DEFAULT_FILE_STORAGE = 'cloudlines.custom_storages.MediaStorage'
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudlines.custom_storages.MediaStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
 AWS_S3_CUSTOM_DOMAIN = 'media.cloud-lines.com'
 AWS_STORAGE_BUCKET_NAME = 'media.cloud-lines.com'
 

@@ -589,7 +589,7 @@ def profile(request):
                     charge['invoice'] = invoice.invoice_pdf
 
             context['charges'] = charges
-        except stripe.error.AuthenticationError:
+        except stripe.AuthenticationError:
             logger.error('Stripe authentication error')
             pass
 
@@ -603,7 +603,7 @@ def profile(request):
             if default_payment_method_id:
                 context['card'] = stripe.PaymentMethod.retrieve(default_payment_method_id)
 
-        except stripe.error.AuthenticationError:
+        except stripe.AuthenticationError:
             pass
 
     return render(request, 'profile.html', context)
@@ -806,18 +806,18 @@ def logo_upload(request):
 
     image = request.FILES['file[0]']
     from PIL import Image
-    #from PIL.Image import core as _imaging
     from django.core.files.base import ContentFile
-    import pyheif
+    from pillow_heif import register_heif_opener
     from io import BytesIO
     from os import path
 
+    register_heif_opener()
+
     filename, file_extension = path.splitext(str(request.FILES['file[0]']))
-    if file_extension == ".HEIC":
+    if file_extension.upper() == ".HEIC":
         img_io = BytesIO()
-        heif_file = pyheif.read(request.FILES['file[0]'])
-        image = Image.frombytes(mode=heif_file.mode, size=heif_file.size, data=heif_file.data)
-        image.save(img_io, format='JPEG', quality=100)
+        heif_image = Image.open(request.FILES['file[0]'])
+        heif_image.save(img_io, format='JPEG', quality=100)
         image = ContentFile(img_io.getvalue(), f"{filename}.jpeg")
 
     attached_service.image = image

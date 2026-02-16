@@ -68,7 +68,7 @@ class StripeAccountManager:
         # Logic for creating an edit account link
         try:
             return stripe.Account.create_login_link(self.stripe_account.stripe_acct_id)
-        except stripe.error.InvalidRequestError:
+        except stripe.InvalidRequestError:
             if self.stripe_account.stripe_acct_id:
                 return self.get_account_link()
             else:
