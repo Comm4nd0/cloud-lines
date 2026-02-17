@@ -389,6 +389,22 @@ remote 'command -v docker >/dev/null 2>&1 || {
 }'
 ok "Docker installed"
 
+# Set up swap on small instances (≤2 GB RAM) to prevent OOM kills
+info "Checking memory and setting up swap if needed..."
+remote 'TOTAL_MEM_KB=$(grep MemTotal /proc/meminfo | awk "{print \$2}")
+if [ "$TOTAL_MEM_KB" -le 2097152 ] && [ ! -f /swapfile ]; then
+    echo "Low memory detected (${TOTAL_MEM_KB}KB) — creating 2GB swap..."
+    sudo fallocate -l 2G /swapfile
+    sudo chmod 600 /swapfile
+    sudo mkswap /swapfile
+    sudo swapon /swapfile
+    echo "/swapfile none swap sw 0 0" | sudo tee -a /etc/fstab
+    echo "Swap enabled."
+else
+    echo "Swap already exists or memory is sufficient."
+fi'
+ok "Memory check complete"
+
 ###############################################################################
 # PHASE 3: Deploy Application
 ###############################################################################
