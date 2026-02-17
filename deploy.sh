@@ -70,19 +70,29 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+USING_CONFIG=false
 if [[ -n "$CONFIG_FILE" && -f "$CONFIG_FILE" ]]; then
     info "Loading configuration from $CONFIG_FILE"
     source "$CONFIG_FILE"
+    USING_CONFIG=true
 fi
 
-# ── Prompt helper (uses existing value if set, otherwise asks) ───────────────
+# ── Prompt helpers ───────────────────────────────────────────────────────────
+# When a config file is loaded, prompts are skipped entirely — even for empty
+# values. This means you can fill in deploy.conf on one screen and run the
+# deploy without any interactive input.
 prompt() {
     local var_name="$1"
     local prompt_text="$2"
     local default="${3:-}"
-    local current_val="${!var_name:-}"
 
-    if [[ -n "$current_val" ]]; then
+    # Skip if variable already has a value
+    if [[ -n "${!var_name:-}" ]]; then
+        return
+    fi
+
+    # Skip if config file is loaded (accept empty values from config)
+    if [[ "$USING_CONFIG" == true ]] && declare -p "$var_name" &>/dev/null; then
         return
     fi
 
@@ -98,9 +108,14 @@ prompt() {
 prompt_secret() {
     local var_name="$1"
     local prompt_text="$2"
-    local current_val="${!var_name:-}"
 
-    if [[ -n "$current_val" ]]; then
+    # Skip if variable already has a value
+    if [[ -n "${!var_name:-}" ]]; then
+        return
+    fi
+
+    # Skip if config file is loaded (accept empty values from config)
+    if [[ "$USING_CONFIG" == true ]] && declare -p "$var_name" &>/dev/null; then
         return
     fi
 

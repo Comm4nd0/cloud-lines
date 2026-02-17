@@ -1,0 +1,47 @@
+# Cloud-Lines Deployment Configuration
+# =====================================
+#
+# 1. Copy this file:        cp deploy.conf.example deploy.conf
+# 2. Fill in ALL values below
+# 3. Run the deploy:        ./deploy.sh --config deploy.conf
+#
+# No prompts will appear if every value is filled in.
+# This file is git-ignored — your secrets stay local.
+
+# ── AWS Infrastructure ───────────────────────────────────────────────────────
+AWS_REGION="eu-west-2"
+AWS_KEY_PAIR_NAME="cloudlines-key"
+SSH_KEY_PATH="$HOME/.ssh/cloudlines-key.pem"
+INSTANCE_TYPE="t3.medium"
+
+# Deploy mode: "new" creates a fresh EC2 instance, "existing" connects to one
+DEPLOY_MODE="new"
+# SERVER_IP is only needed when DEPLOY_MODE="existing"
+SERVER_IP=""
+
+# ── Domain & SSL ─────────────────────────────────────────────────────────────
+# Leave DOMAIN blank to access the site via the server IP only
+DOMAIN=""
+# Set to "yes" to enable Let's Encrypt (requires a valid DOMAIN above)
+SETUP_SSL="no"
+SSL_EMAIL=""
+
+# ── Application ──────────────────────────────────────────────────────────────
+SITE_NAME="app"
+DB_NAME="cloudlines"
+DB_USER="cloudlines"
+
+# ── Secrets (fill these in) ──────────────────────────────────────────────────
+SECRET_KEY=""
+DB_PASSWORD=""
+
+# AWS keys used for S3 media storage and SES email
+AWS_ACCESS_KEY_ID=""
+AWS_SECRET_ACCESS_KEY=""
+AWS_S3_BUCKET="media.cloud-lines.com"
+
+# Stripe payment keys
+STRIPE_SECRET_KEY=""
+STRIPE_PUBLIC_KEY=""
+STRIPE_TEST_SECRET_KEY=""
+STRIPE_TEST_PUBLIC_KEY=""
