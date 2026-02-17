@@ -5,6 +5,12 @@
 # 2. Fill in ALL values below
 # 3. Run the deploy:        ./deploy.sh --config deploy.conf
 #
+# After the first deploy, update with latest code:
+#   ./deploy.sh --config deploy.conf --update
+#
+# Force a clean Docker rebuild on update:
+#   ./deploy.sh --config deploy.conf --update --no-cache
+#
 # No prompts will appear if every value is filled in.
 # This file is git-ignored — your secrets stay local.
 
