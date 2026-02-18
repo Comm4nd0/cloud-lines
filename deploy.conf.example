@@ -1,22 +1,31 @@
 # Cloud-Lines Deployment Configuration
 # =====================================
 #
-# 1. Copy this file:        cp deploy.conf.example deploy.conf
-# 2. Fill in ALL values below
-# 3. Run the deploy:        ./deploy.sh --config deploy.conf
+# Infrastructure (one-time):
+#   aws cloudformation deploy \
+#     --template-file cloudformation.yml \
+#     --stack-name cloudlines \
+#     --parameter-overrides KeyPairName=your-key
+#
+# Then:
+#   1. Copy this file:    cp deploy.conf.example deploy.conf
+#   2. Fill in ALL values below
+#   3. Deploy the app:    ./deploy.sh --config deploy.conf --stack cloudlines
+#
+# Subsequent updates:
+#   ./deploy.sh --config deploy.conf
+#
+# Force a clean Docker rebuild:
+#   ./deploy.sh --config deploy.conf --no-cache
 #
 # No prompts will appear if every value is filled in.
 # This file is git-ignored — your secrets stay local.
 
-# ── AWS Infrastructure ───────────────────────────────────────────────────────
+# ── Server Connection ────────────────────────────────────────────────────────
 AWS_REGION="eu-west-2"
-AWS_KEY_PAIR_NAME="cloudlines-key"
 SSH_KEY_PATH="$HOME/.ssh/cloudlines-key.pem"
-INSTANCE_TYPE="t2.micro"
 
-# Deploy mode: "new" creates a fresh EC2 instance, "existing" connects to one
-DEPLOY_MODE="new"
-# SERVER_IP is only needed when DEPLOY_MODE="existing"
+# Server IP — set manually or use --stack to resolve from CloudFormation
 SERVER_IP=""
 
 # ── Domain & SSL ─────────────────────────────────────────────────────────────

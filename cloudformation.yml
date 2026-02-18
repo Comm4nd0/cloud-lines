@@ -1,0 +1,155 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Cloud-Lines infrastructure — single EC2 instance with Docker pre-installed.
+  After stack creation, deploy the app with: ./deploy.sh --config deploy.conf
+
+Parameters:
+  KeyPairName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: Name of an existing EC2 key pair for SSH access
+
+  InstanceType:
+    Type: String
+    Default: t2.micro
+    Description: EC2 instance type (t2.micro is Free Tier eligible)
+    AllowedValues:
+      - t2.micro
+      - t2.small
+      - t3.micro
+      - t3.small
+      - t3.medium
+
+  SiteName:
+    Type: String
+    Default: cloudlines
+    Description: Name used for tagging resources
+    AllowedPattern: '[a-z0-9\-]+'
+
+  VolumeSize:
+    Type: Number
+    Default: 30
+    Description: Root EBS volume size in GB
+    MinValue: 20
+    MaxValue: 100
+
+  LatestUbuntuAMI:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id
+    Description: Ubuntu 22.04 LTS AMI (auto-resolved from SSM)
+
+Resources:
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub '${SiteName} application server'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+          Description: SSH
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+          Description: HTTP
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+          Description: HTTPS
+      Tags:
+        - Key: Name
+          Value: !Sub '${SiteName}-sg'
+
+  Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref LatestUbuntuAMI
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyPairName
+      SecurityGroupIds:
+        - !GetAtt SecurityGroup.GroupId
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: !Ref VolumeSize
+            VolumeType: gp3
+      Tags:
+        - Key: Name
+          Value: !Sub '${SiteName}-server'
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          set -euo pipefail
+          exec > /var/log/cloud-init-docker.log 2>&1
+
+          # System update
+          apt-get update -qq
+          DEBIAN_FRONTEND=noninteractive apt-get upgrade -y -qq
+
+          # Install Docker
+          apt-get install -y -qq ca-certificates curl gnupg
+          install -m 0755 -d /etc/apt/keyrings
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+          chmod a+r /etc/apt/keyrings/docker.gpg
+          ARCH=$(dpkg --print-architecture)
+          CODENAME=$(. /etc/os-release && echo $VERSION_CODENAME)
+          echo "deb [arch=$ARCH signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $CODENAME stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+          apt-get update -qq
+          apt-get install -y -qq docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+          usermod -aG docker ubuntu
+
+          # Set up swap on small instances (≤2 GB RAM)
+          TOTAL_MEM=$(grep MemTotal /proc/meminfo | awk '{print $2}')
+          if [ "$TOTAL_MEM" -le 2097152 ] && [ ! -f /swapfile ]; then
+              fallocate -l 2G /swapfile
+              chmod 600 /swapfile
+              mkswap /swapfile
+              swapon /swapfile
+              echo "/swapfile none swap sw 0 0" >> /etc/fstab
+          fi
+
+          # Prepare app directory
+          mkdir -p /home/ubuntu/cloud-lines
+          chown ubuntu:ubuntu /home/ubuntu/cloud-lines
+
+          # Install certbot for SSL
+          apt-get install -y -qq certbot
+
+  ElasticIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: !Sub '${SiteName}-eip'
+
+  EIPAssociation:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      AllocationId: !GetAtt ElasticIP.AllocationId
+      InstanceId: !Ref Instance
+
+Outputs:
+  ServerIP:
+    Description: Elastic IP address — point your DNS here
+    Value: !Ref ElasticIP
+    Export:
+      Name: !Sub '${AWS::StackName}-ServerIP'
+
+  InstanceId:
+    Description: EC2 instance ID
+    Value: !Ref Instance
+
+  SecurityGroupId:
+    Description: Security group ID
+    Value: !GetAtt SecurityGroup.GroupId
+
+  SSHCommand:
+    Description: SSH into the server
+    Value: !Sub 'ssh -i ~/.ssh/${KeyPairName}.pem ubuntu@${ElasticIP}'
+
+  DeployCommand:
+    Description: Deploy the application
+    Value: !Sub './deploy.sh --config deploy.conf --stack ${AWS::StackName}'
